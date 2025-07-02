@@ -1,0 +1,424 @@
+{
+    "m_SelectedDeviceId": "e273f403",
+    "m_SelectedProcess": {
+        "deviceId": "e273f403",
+        "name": "com.appinon.rummychampion",
+        "processId": 10555,
+        "exited": false
+    },
+    "m_SelectedPriority": 0,
+    "m_KnownProcessesForSerialization": [
+        {
+            "deviceId": "136065334500062",
+            "name": "com.android.launcher3",
+            "processId": 3810,
+            "exited": false
+        },
+        {
+            "deviceId": "136065334500062",
+            "name": "com.appinon.rummychampion",
+            "processId": 31921,
+            "exited": true
+        },
+        {
+            "deviceId": "136065334500062",
+            "name": "com.appinop.mychamp",
+            "processId": 32628,
+            "exited": true
+        },
+        {
+            "deviceId": "136065334500062",
+            "name": "com.appinop.mychamp",
+            "processId": 4320,
+            "exited": true
+        },
+        {
+            "deviceId": "136065334500062",
+            "name": "com.appinop.mychamp",
+            "processId": 6078,
+            "exited": true
+        },
+        {
+            "deviceId": "136065334500062",
+            "name": "com.appinop.mychamp",
+            "processId": 7499,
+            "exited": false
+        },
+        {
+            "deviceId": "136065334500062",
+            "name": "com.appinon.rummychampion",
+            "processId": 9799,
+            "exited": false
+        },
+        {
+            "deviceId": "136065334500062",
+            "name": "com.appinon.rummychampion",
+            "processId": 12595,
+            "exited": false
+        },
+        {
+            "deviceId": "136065334500062",
+            "name": "com.appinon.rummychampion",
+            "processId": 23916,
+            "exited": false
+        },
+        {
+            "deviceId": "136065334500062",
+            "name": "com.appinon.rummychampion",
+            "processId": 26295,
+            "exited": false
+        },
+        {
+            "deviceId": "136065334500062",
+            "name": "com.appinon.rummychampion",
+            "processId": 26703,
+            "exited": false
+        },
+        {
+            "deviceId": "136065334500062",
+            "name": "com.appinon.rummychampion",
+            "processId": 27036,
+            "exited": false
+        },
+        {
+            "deviceId": "136065334500062",
+            "name": "com.appinon.rummychampion",
+            "processId": 14987,
+            "exited": false
+        },
+        {
+            "deviceId": "136065334500062",
+            "name": "com.appinon.rummychampion",
+            "processId": 21356,
+            "exited": false
+        },
+        {
+            "deviceId": "136065334500062",
+            "name": "com.appinon.rummychampion",
+            "processId": 24489,
+            "exited": false
+        },
+        {
+            "deviceId": "B6NV6T6HGI99L7BA",
+            "name": "com.appinon.kheloindia",
+            "processId": 19712,
+            "exited": true
+        },
+        {
+            "deviceId": "B6NV6T6HGI99L7BA",
+            "name": "com.appinon.kheloindia",
+            "processId": 25922,
+            "exited": true
+        },
+        {
+            "deviceId": "B6NV6T6HGI99L7BA",
+            "name": "com.appinon.kheloindia",
+            "processId": 31040,
+            "exited": true
+        },
+        {
+            "deviceId": "B6NV6T6HGI99L7BA",
+            "name": "com.appinon.kheloindia",
+            "processId": 16781,
+            "exited": true
+        },
+        {
+            "deviceId": "B6NV6T6HGI99L7BA",
+            "name": "com.appinon.kheloindia",
+            "processId": 22539,
+            "exited": false
+        },
+        {
+            "deviceId": "B6NV6T6HGI99L7BA",
+            "name": "com.appinon.kheloindia",
+            "processId": 26527,
+            "exited": false
+        },
+        {
+            "deviceId": "B6NV6T6HGI99L7BA",
+            "name": "com.appinon.kheloindia",
+            "processId": 6675,
+            "exited": false
+        },
+        {
+            "deviceId": "B6NV6T6HGI99L7BA",
+            "name": "com.appinon.kheloindia",
+            "processId": 22148,
+            "exited": false
+        },
+        {
+            "deviceId": "0e3b3f61",
+            "name": "com.appinon.kheloindia",
+            "processId": 26800,
+            "exited": true
+        },
+        {
+            "deviceId": "0e3b3f61",
+            "name": "com.android.launcher",
+            "processId": 3746,
+            "exited": false
+        },
+        {
+            "deviceId": "0e3b3f61",
+            "name": "com.appinon.mychamp",
+            "processId": 19834,
+            "exited": true
+        },
+        {
+            "deviceId": "0e3b3f61",
+            "name": "com.appinon.mychamp",
+            "processId": 20028,
+            "exited": true
+        },
+        {
+            "deviceId": "0e3b3f61",
+            "name": "com.appinop.mychamp",
+            "processId": 30379,
+            "exited": false
+        },
+        {
+            "deviceId": "CMCUBURKYD59YXSC",
+            "name": "com.appinon.kheloindia",
+            "processId": 8228,
+            "exited": true
+        },
+        {
+            "deviceId": "CMCUBURKYD59YXSC",
+            "name": "com.appinon.kheloindia",
+            "processId": 8828,
+            "exited": false
+        },
+        {
+            "deviceId": "CMCUBURKYD59YXSC",
+            "name": "com.appinon.kheloindia",
+            "processId": 21271,
+            "exited": false
+        },
+        {
+            "deviceId": "RZCW20X40RL",
+            "name": "com.sec.android.app.launcher",
+            "processId": 4888,
+            "exited": false
+        },
+        {
+            "deviceId": "RZCW20X40RL",
+            "name": "com.appinon.rummychampion",
+            "processId": 16688,
+            "exited": false
+        },
+        {
+            "deviceId": "ZD222PJP6R",
+            "name": "com.appinon.rummychampion",
+            "processId": 9213,
+            "exited": true
+        },
+        {
+            "deviceId": "ZD222PJP6R",
+            "name": "com.appinon.rummychampion",
+            "processId": 13222,
+            "exited": true
+        },
+        {
+            "deviceId": "ZD222PJP6R",
+            "name": "com.appinon.rummychampion",
+            "processId": 1345,
+            "exited": true
+        },
+        {
+            "deviceId": "ZD222PJP6R",
+            "name": "com.appinon.rummychampion",
+            "processId": 25718,
+            "exited": true
+        },
+        {
+            "deviceId": "ZD222PJP6R",
+            "name": "com.appinon.rummychampion",
+            "processId": 26334,
+            "exited": false
+        },
+        {
+            "deviceId": "ZD222PJP6R",
+            "name": "com.appinon.rummychampion",
+            "processId": 29256,
+            "exited": false
+        },
+        {
+            "deviceId": "ZD222PJP6R",
+            "name": "com.appinon.rummychampion",
+            "processId": 32659,
+            "exited": false
+        },
+        {
+            "deviceId": "ZD222PJP6R",
+            "name": "com.appinon.rummychampion",
+            "processId": 1461,
+            "exited": false
+        },
+        {
+            "deviceId": "ZD222PJP6R",
+            "name": "com.appinon.rummychampion",
+            "processId": 5859,
+            "exited": false
+        },
+        {
+            "deviceId": "ZD222PJP6R",
+            "name": "com.appinon.rummychampion",
+            "processId": 7360,
+            "exited": false
+        },
+        {
+            "deviceId": "ZD222PJP6R",
+            "name": "com.appinon.rummychampion",
+            "processId": 8488,
+            "exited": false
+        },
+        {
+            "deviceId": "ZD222PJP6R",
+            "name": "com.appinon.rummychampion",
+            "processId": 9562,
+            "exited": false
+        },
+        {
+            "deviceId": "e273f403",
+            "name": "com.appinop.mychamp",
+            "processId": 6335,
+            "exited": true
+        },
+        {
+            "deviceId": "e273f403",
+            "name": "com.appinop.mychamp",
+            "processId": 7712,
+            "exited": true
+        },
+        {
+            "deviceId": "e273f403",
+            "name": "com.miui.global.packageinstaller",
+            "processId": 11456,
+            "exited": true
+        },
+        {
+            "deviceId": "e273f403",
+            "name": "com.appinop.mychamp",
+            "processId": 12230,
+            "exited": true
+        },
+        {
+            "deviceId": "e273f403",
+            "name": "com.appinon.rummychampion",
+            "processId": 10555,
+            "exited": false
+        },
+        {
+            "deviceId": "e273f403",
+            "name": "com.miui.home",
+            "processId": 30020,
+            "exited": false
+        },
+        {
+            "deviceId": "emulator-5554",
+            "name": "com.appinop.mychamp",
+            "processId": 18590,
+            "exited": true
+        },
+        {
+            "deviceId": "emulator-5554",
+            "name": "com.uncube.launcher3",
+            "processId": 2684,
+            "exited": true
+        }
+    ],
+    "m_Tags": {
+        "m_Entries": [
+            {
+                "m_Name": "Filter by all listed tags",
+                "m_Selected": false
+            },
+            {
+                "m_Name": "No Filter",
+                "m_Selected": true
+            },
+            {
+                "m_Name": "",
+                "m_Selected": false
+            },
+            {
+                "m_Name": "Tag Control...",
+                "m_Selected": false
+            },
+            {
+                "m_Name": "",
+                "m_Selected": false
+            },
+            {
+                "m_Name": "Unity",
+                "m_Selected": false
+            },
+            {
+                "m_Name": "CRASH",
+                "m_Selected": false
+            },
+            {
+                "m_Name": "AirpayPaymentActivity",
+                "m_Selected": false
+            },
+            {
+                "m_Name": "PhonePeAndroid",
+                "m_Selected": false
+            },
+            {
+                "m_Name": "PhonePePlugin",
+                "m_Selected": false
+            }
+        ]
+    },
+    "m_ExtraWindowState": {
+        "Type": 0,
+        "Height": 0.0
+    },
+    "m_MemoryViewerState": {
+        "MemoryWindowWidth": 170.0,
+        "MemoryTypeEnabled": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+        ],
+        "MemoryGroup": 2,
+        "AutoCapture": true
+    },
+    "m_FilterOptions": {
+        "m_Filter": "",
+        "m_UseRegularExpressions": false,
+        "m_MatchCase": false
+    },
+    "m_SymbolPaths": [],
+    "m_CaptureVideoSettings": {
+        "TimeLimitEnabled": false,
+        "TimeLimit": 180,
+        "VideoSizeEnabled": false,
+        "VideoSizeX": 1280,
+        "VideoSizeY": 720,
+        "BitRateEnabled": false,
+        "BitRateK": 20000,
+        "DisplayIdEnabled": false,
+        "DisplayId": ""
+    },
+    "m_InputSettings": {
+        "ShiftModifier": false,
+        "SendText": "",
+        "PosixKillSignal": 0,
+        "TargetProcess": {
+            "deviceId": "",
+            "name": "",
+            "processId": 0,
+            "exited": false
+        }
+    },
+    "m_AutoScroll": 2
+}

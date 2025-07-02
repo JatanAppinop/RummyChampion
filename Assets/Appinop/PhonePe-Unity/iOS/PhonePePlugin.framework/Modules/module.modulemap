@@ -1,0 +1,6 @@
+framework module PhonePePlugin {
+  umbrella header "PhonePePlugin.h"
+  export *
+
+  module * { export * }
+}

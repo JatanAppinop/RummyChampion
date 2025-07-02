@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8296801151686301422
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4479155185391250221}
+  - component: {fileID: 372664994025974203}
+  m_Layer: 0
+  m_Name: '[ Profile Photo Helper ]'
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4479155185391250221
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8296801151686301422}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &372664994025974203
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8296801151686301422}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2ab7db83226b6d4e9fd3fdcd8544087, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sprites:
+  - {fileID: 21300000, guid: e27b593fb4524fc498be0b4c743156e9, type: 3}
+  - {fileID: 21300000, guid: 7f4274ea2e0a37a4797678e39628618a, type: 3}
+  - {fileID: 21300000, guid: 43eed6633dd7f2e479b514ef430ecb9a, type: 3}
+  - {fileID: 21300000, guid: f431a739154a0ed4683a8ecaaac3893b, type: 3}
+  - {fileID: 21300000, guid: a831b0fd23685e541aa1ee07406b14f7, type: 3}
+  - {fileID: 21300000, guid: 7dfb8936218e411488f4635a9a815992, type: 3}
+  colors:
+  - {r: 0.58431375, g: 0.75686276, b: 0.12156863, a: 1}
+  - {r: 0.9137255, g: 0.30588236, b: 0.105882354, a: 1}
+  - {r: 0.14509805, g: 0.6156863, b: 0.67058825, a: 1}
+  - {r: 0.9607843, g: 0.6156863, b: 0.08627451, a: 1}
+  - {r: 0.92156863, g: 0.35686275, b: 0.627451, a: 1}
+  - {r: 0.654902, g: 0.30980393, b: 0.7764706, a: 1}
+  - {r: 0.8509804, g: 0.60784316, b: 0.76862746, a: 1}
+  - {r: 1, g: 1, b: 1, a: 1}
+  - {r: 0.15686275, g: 0.93333334, b: 0.41960785, a: 1}
+  - {r: 0.4862745, g: 0.90588236, b: 0.90588236, a: 1}
+  - {r: 0.44705883, g: 0.49019608, b: 0.88235295, a: 1}
+  - {r: 0.9764706, g: 0.25882354, b: 0.56078434, a: 1}

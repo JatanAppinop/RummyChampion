@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/_Project/Scenes/Initialization.unity
+    guid: 8f0c374fc06faae44b3ebf75c118436d
+  - enabled: 1
+    path: Assets/_Project/Scenes/Login.unity
+    guid: 598a96fdc03659f4fa860386014d2180
+  - enabled: 1
+    path: Assets/_Project/Scenes/MainMenu.unity
+    guid: 912e1331fca0c5649a8bc7279cdcae91
+  - enabled: 1
+    path: Assets/_Project/Scenes/GameScene.unity
+    guid: c2ef134e5d5799a4eba7f6aee4949622
+  - enabled: 1
+    path: Assets/_Project/Scenes/Gameover.unity
+    guid: 62c7a2951dac6864984152571952d957
+  - enabled: 1
+    path: Assets/Gin Rummy/_Scenes/Game.unity
+    guid: ff09ebcbefa5d884e9a51db1291faec9
+  m_configObjects:
+    com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 5f1c661963bf53341a4b47903c672291, type: 2}

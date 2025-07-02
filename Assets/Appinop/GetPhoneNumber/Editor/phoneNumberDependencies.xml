@@ -1,0 +1,13 @@
+<dependencies>
+  <androidPackages>
+  <repositories>
+      <repository>https://repo.maven.apache.org/maven2</repository>
+    </repositories>
+    <androidPackage spec="com.google.android.gms:play-services-auth:21.0.0">
+    </androidPackage>
+    <androidPackage spec="com.google.android.gms:play-services-identity:18.0.1">
+    </androidPackage>
+    <androidPackage spec="com.google.android.gms:play-services-auth-api-phone:18.0.2">
+    </androidPackage>
+  </androidPackages>
+</dependencies>

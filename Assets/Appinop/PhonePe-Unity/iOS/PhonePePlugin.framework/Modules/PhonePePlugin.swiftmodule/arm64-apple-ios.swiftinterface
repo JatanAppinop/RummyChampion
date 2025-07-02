@@ -1,0 +1,18 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.0.2 effective-5.10 (swiftlang-6.0.2.1.2 clang-1600.0.26.4)
+// swift-module-flags: -target arm64-apple-ios16.6 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-bare-slash-regex -module-name PhonePePlugin
+import Foundation
+import PhonePePayment
+@_exported import PhonePePlugin
+import Swift
+import UIKit
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc public class PhonePeManager : ObjectiveC.NSObject {
+  @objc public static let shared: PhonePePlugin.PhonePeManager
+  @objc public func makePGRequest(environment: Swift.String, merchantId: Swift.String, base64Payload: Swift.String, apiEndPoint: Swift.String, checksum: Swift.String, flowId: Swift.String, appSchema: Swift.String, enableLogging: Swift.Bool)
+  @objc deinit
+}
+@_cdecl("makePGRequest")
+public func makePGRequest(environment: Swift.UnsafePointer<Swift.CChar>, merchantId: Swift.UnsafePointer<Swift.CChar>, base64Payload: Swift.UnsafePointer<Swift.CChar>, apiEndPoint: Swift.UnsafePointer<Swift.CChar>, checksum: Swift.UnsafePointer<Swift.CChar>, flowId: Swift.UnsafePointer<Swift.CChar>, appSchema: Swift.UnsafePointer<Swift.CChar>, enableLogging: Swift.Bool)
