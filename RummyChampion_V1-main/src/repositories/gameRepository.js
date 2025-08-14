@@ -11,7 +11,8 @@ class gameRepository {
     }
 
     async getSettings() {
-        return await Settings.findOne();
+        const settings = await Settings.findOne({});
+        return settings || { maintenance: false }; // safe fallback
     }
 
     async updateSettings(updatedData) {

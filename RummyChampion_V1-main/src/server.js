@@ -56,7 +56,8 @@ app.use(
 );
 
 app.get("/", async (req, res) => {
-  const { maintenance } = await gameService.getSettings();
+  const { maintenance } = await gameService.getSettings()
+  
   return res.json({
     success: true,
     message: "RC Server is online",
@@ -87,11 +88,12 @@ app.use((req, res, next) => {
   );
   next();
 });
-
 const uploadDir = path.join(__dirname, "uploads");
+
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
+
 
 app.use(cors());
 app.use(helmet());
