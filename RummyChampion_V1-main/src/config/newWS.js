@@ -56,21 +56,45 @@ module.exports = {
     const RummyServerNamespace = io.of("/rummyserver");
 
     RummyServerNamespace.on("connection", async (socket) => {
+      console.log(`🔍 [CONNECTION DEBUG] ===== NEW CONNECTION ATTEMPT =====`);
+      console.log(`🔍 [CONNECTION DEBUG] Socket ID: ${socket.id}`);
+      console.log(`🔍 [CONNECTION DEBUG] Socket handshake query:`, socket.handshake.query);
+      
       const { matchId, playerId } = socket.handshake.query; // Add gameType to query
+      console.log(`🔍 [CONNECTION DEBUG] Extracted matchId: ${matchId}`);
+      console.log(`🔍 [CONNECTION DEBUG] Extracted playerId: ${playerId}`);
+      
       let gameType;
       let playerCount;
       let game;
 
       if (matchId && playerId) {
+        console.log(`✅ [CONNECTION DEBUG] MatchId and PlayerId present, proceeding with connection`);
         try {
+          console.log(`🔍 [CONNECTION DEBUG] Looking up game in database...`);
           game = await Game.findById(matchId).populate("tableId");
-          if (!game) throw new Error("Game not found");
-          if (!game.players.includes(playerId))
+          console.log(`🔍 [CONNECTION DEBUG] Game found:`, game ? "YES" : "NO");
+          
+          if (!game) {
+            console.error(`❌ [CONNECTION DEBUG] Game not found for matchId: ${matchId}`);
+            throw new Error("Game not found");
+          }
+          
+          console.log(`🔍 [CONNECTION DEBUG] Game players:`, game.players);
+          console.log(`🔍 [CONNECTION DEBUG] Checking if ${playerId} is in game.players...`);
+          
+          if (!game.players.includes(playerId)) {
+            console.error(`❌ [CONNECTION DEBUG] Player ${playerId} not authorized for game ${matchId}`);
+            console.error(`❌ [CONNECTION DEBUG] Authorized players:`, game.players);
             throw new Error("Player not authorized for this game");
+          }
 
           gameType = game.tableId.gameMode;
-          console.log("🚀 ~ RummyServerNamespace.on ~ gameType:", gameType);
+          console.log("✅ [CONNECTION DEBUG] Game type:", gameType);
           playerCount = game.players.length;
+          console.log("✅ [CONNECTION DEBUG] Player count:", playerCount);
+          
+          console.log(`🔍 [CONNECTION DEBUG] Joining socket to room: ${game.id}`);
           socket.join(game.id);
 
           const newPlayer = {
@@ -78,11 +102,23 @@ module.exports = {
             playerId,
             contestId: game.tableId._id,
           };
-          console.log(playerId, "Connected to RummyServer");
+          console.log(`✅ [CONNECTION DEBUG] Created newPlayer object:`, newPlayer);
+          console.log(`🔍 [CONNECTION DEBUG] About to call removeDuplicatePlayer for ${playerId}`);
+          
+          // Check for existing players before removing
+          const existingInOnline = onlinePlayers.find(p => p.playerId === playerId);
+          const existingInSearching = playersSearching.find(p => p.playerId === playerId);
+          console.log(`🔍 [CONNECTION DEBUG] Existing in onlinePlayers:`, existingInOnline ? "YES" : "NO");
+          console.log(`🔍 [CONNECTION DEBUG] Existing in playersSearching:`, existingInSearching ? "YES" : "NO");
+          
           removeDuplicatePlayer(playerId, io);
-
+          console.log(`✅ [CONNECTION DEBUG] removeDuplicatePlayer completed`);
+          
+          console.log(`🔍 [CONNECTION DEBUG] Adding player to onlinePlayers array`);
           onlinePlayers.push(newPlayer);
+          console.log(`🔍 [CONNECTION DEBUG] Adding player to database`);
           await addPlayerToDB(newPlayer);
+          console.log(`✅ [CONNECTION DEBUG] Player successfully added to DB and arrays`);
 
           // Initialize game type-specific variables
           if (gameType === "Deals") {
@@ -1071,13 +1107,25 @@ module.exports = {
             }
           });
         } catch (error) {
-          console.error(error);
+          console.error(`❌ [CONNECTION DEBUG] ERROR during connection setup:`, error);
+          console.error(`❌ [CONNECTION DEBUG] Error message:`, error.message);
+          console.error(`❌ [CONNECTION DEBUG] Error stack:`, error.stack);
+          console.log(`❌ [CONNECTION DEBUG] Disconnecting socket ${socket.id} due to error`);
+          
           RummyServerNamespace.in(socket.id).disconnectSockets();
           removePlayerFromList(onlinePlayers, playerId);
+          
+          console.log(`❌ [CONNECTION DEBUG] Player ${playerId} removed and disconnected due to error`);
         }
       } else {
-        console.error("Missing MatchID or playerID");
+        console.error(`❌ [CONNECTION DEBUG] Missing MatchID or playerID`);
+        console.error(`❌ [CONNECTION DEBUG] Received matchId: ${matchId}`);
+        console.error(`❌ [CONNECTION DEBUG] Received playerId: ${playerId}`);
+        console.log(`❌ [CONNECTION DEBUG] Disconnecting socket ${socket.id} due to missing credentials`);
+        
         RummyServerNamespace.in(socket.id).disconnectSockets();
+        
+        console.log(`❌ [CONNECTION DEBUG] Socket disconnected due to missing matchId or playerId`);
       }
     });
 
@@ -1448,12 +1496,16 @@ const logOnlinePlayers = () => {
 };
 
 function disconnectPlayer(socketId, io) {
+  console.log(`🔍 [DISCONNECT DEBUG] ===== DISCONNECTING PLAYER =====`);
+  console.log(`🔍 [DISCONNECT DEBUG] Socket ID to disconnect: ${socketId}`);
+  
   const targetSocket = io.sockets.sockets.get(socketId);
   if (targetSocket) {
+    console.log(`⚠️ [DISCONNECT DEBUG] Found target socket, disconnecting...`);
     targetSocket.disconnect(true);
-    console.log("Target Socket Disconnected");
+    console.log("❌ [DISCONNECT DEBUG] Target Socket Disconnected");
   } else {
-    console.log("Socket is not connected", socketId);
+    console.log(`🔍 [DISCONNECT DEBUG] Socket is not connected: ${socketId}`);
   }
 }
 
@@ -1471,13 +1523,35 @@ function removePlayerFromList(list, playerId) {
 }
 
 function removeDuplicatePlayer(playerId, io) {
+  console.log(`🔍 [REMOVE DUPLICATE DEBUG] ===== CHECKING FOR DUPLICATE PLAYER =====`);
+  console.log(`🔍 [REMOVE DUPLICATE DEBUG] Looking for existing player with ID: ${playerId}`);
+  
   let existingPlayer;
-  [onlinePlayers, playersSearching].forEach(
-    (list) =>
-      (existingPlayer = list.find((player) => player.playerId === playerId)) &&
-      disconnectPlayer(existingPlayer.socketId, io) &&
-      removePlayerFromList(list, existingPlayer.playerId)
-  );
+  let removedAny = false;
+  
+  [onlinePlayers, playersSearching].forEach((list, index) => {
+    const listName = index === 0 ? "onlinePlayers" : "playersSearching";
+    console.log(`🔍 [REMOVE DUPLICATE DEBUG] Checking ${listName} list (${list.length} players)`);
+    
+    existingPlayer = list.find((player) => player.playerId === playerId);
+    
+    if (existingPlayer) {
+      console.log(`⚠️ [REMOVE DUPLICATE DEBUG] Found duplicate in ${listName}:`, existingPlayer);
+      console.log(`❌ [REMOVE DUPLICATE DEBUG] Disconnecting existing socket: ${existingPlayer.socketId}`);
+      
+      disconnectPlayer(existingPlayer.socketId, io);
+      removePlayerFromList(list, existingPlayer.playerId);
+      removedAny = true;
+      
+      console.log(`✅ [REMOVE DUPLICATE DEBUG] Removed duplicate from ${listName}`);
+    } else {
+      console.log(`✅ [REMOVE DUPLICATE DEBUG] No duplicate found in ${listName}`);
+    }
+  });
+  
+  if (!removedAny) {
+    console.log(`✅ [REMOVE DUPLICATE DEBUG] No duplicates found for ${playerId}`);
+  }
 }
 
 const matchPlayers = async (newPlayer, numberOfPlayersToMatch, io) => {
@@ -1751,23 +1825,37 @@ const updateMatch = async (winnerId, loserId, matchId) => {
 
 const addPlayerToDB = async (player) => {
   try {
-    await OnlinePlayers.updateOne(
+    console.log(`🔍 [DB DEBUG] ===== ADDING PLAYER TO DATABASE =====`);
+    console.log(`🔍 [DB DEBUG] Player to add:`, player);
+    
+    const result = await OnlinePlayers.updateOne(
       { playerId: player.playerId },
       { contestId: player.contestId },
       { upsert: true }
     );
-    console.log("Player added/updated in DB");
+    
+    console.log(`✅ [DB DEBUG] Player added/updated in DB:`, result);
+    console.log(`🔍 [DB DEBUG] Modified count: ${result.modifiedCount}`);
+    console.log(`🔍 [DB DEBUG] Upserted count: ${result.upsertedCount}`);
   } catch (error) {
-    console.error("Error adding player:", error);
+    console.error(`❌ [DB DEBUG] Error adding player to DB:`, error);
+    console.error(`❌ [DB DEBUG] Player data:`, player);
+    throw error; // Re-throw to see if this causes connection issues
   }
 };
 
 const removePlayerFromDB = async (playerId) => {
   try {
-    await OnlinePlayers.deleteOne({ playerId });
-    console.log("Player removed from DB");
+    console.log(`🔍 [DB DEBUG] ===== REMOVING PLAYER FROM DATABASE =====`);
+    console.log(`🔍 [DB DEBUG] Player ID to remove: ${playerId}`);
+    
+    const result = await OnlinePlayers.deleteOne({ playerId });
+    
+    console.log(`✅ [DB DEBUG] Player removal result:`, result);
+    console.log(`🔍 [DB DEBUG] Deleted count: ${result.deletedCount}`);
   } catch (error) {
-    console.error("Error removing player:", error);
+    console.error(`❌ [DB DEBUG] Error removing player from DB:`, error);
+    console.error(`❌ [DB DEBUG] Player ID: ${playerId}`);
   }
 };
 

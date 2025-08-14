@@ -129,7 +129,7 @@ public class GameManager : MonoBehaviour
         this.bid = bid;
         this.gameData = gameData;
         InitPlayers();
-        
+
         // 🔹 Initialize enhanced functionality
         InitializeEnhancedUI();
         
