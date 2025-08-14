@@ -305,7 +305,7 @@ public class RoundEndScreen : IHUD
         }
         
         // End the game
-        gameManager.gamePhase = GamePhase.GameEnded;
+        //gameManager.gamePhase = GamePhase.GameEnded;
     }
     
     // 🔹 NEW: Handle continuation to next deal
@@ -415,7 +415,7 @@ public class RoundEndScreen : IHUD
         }
         
         // End the game
-        gameManager.gamePhase = GamePhase.GameEnded;
+        //gameManager.gamePhase = GamePhase.GameEnded;
     }
     
     // 🔹 NEW: Handle Pool game continuation

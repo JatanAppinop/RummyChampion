@@ -22,6 +22,7 @@ public class UserData
     public bool firsttime;
 
     public double totalCoins;
+    public double walletCoins;
 
 
     public int profilePhotoIndex;

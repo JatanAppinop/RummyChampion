@@ -564,7 +564,7 @@ public class RummySocketServer : SingletonWithGameobject<RummySocketServer>
                 case "game_start":
                 case "begin_game":
                     Debug.Log("[Socket] 🎮 Game start event triggered from player_ready");
-                    OnGameStart?.Invoke();
+                    //OnGameStart?.Invoke();
                     break;
                     
                 case "start_turn":
@@ -599,7 +599,7 @@ public class RummySocketServer : SingletonWithGameobject<RummySocketServer>
                 case "distribute_cards":
                     Debug.Log("[Socket] 🃏 Card distribution event triggered");
                     // Trigger card distribution
-                    OnGameStart?.Invoke();
+                    //OnGameStart?.Invoke();
                     break;
                     
                 case "wait_for_players":
@@ -611,7 +611,7 @@ public class RummySocketServer : SingletonWithGameobject<RummySocketServer>
                 case "match_ready":
                 case "all_players_ready":
                     Debug.Log("[Socket] ✅ All players ready - starting match");
-                    OnGameStart?.Invoke();
+                    //OnGameStart?.Invoke();
                     break;
                     
                 default:
@@ -645,7 +645,7 @@ public class RummySocketServer : SingletonWithGameobject<RummySocketServer>
                 case "start_game":
                 case "begin":
                     Debug.Log("[Socket] 🎮 Starting game from string response");
-                    OnGameStart?.Invoke();
+                    //OnGameStart?.Invoke();
                     break;
                     
                 case "wait":

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using SecPlayerPrefs;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
@@ -796,7 +797,7 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        gamePhase = GamePhase.Dealing;
+        gamePhase = GamePhase.CardsDealing;
         StartNewMatch();
 
         await Task.Delay(1000);
@@ -1480,26 +1481,26 @@ public class GameManager : MonoBehaviour
     }
     
     // 🔹 NEW: Missing method for checking one player remains
-    public bool CheckIfOnlyOnePlayerRemains()
-    {
-        return GetActivePlayersCount() <= 1;
-    }
+    //public bool CheckIfOnlyOnePlayerRemains()
+    //{
+    //    return GetActivePlayersCount() <= 1;
+    //}
     
-    // 🔹 NEW: Get Pool winning amount
-    public int GetPoolWinningAmount()
-    {
-        double totalPool = bid?.totalBet ?? 100;
-        int platformFee = GetPlatformFee((int)totalPool);
-        return (int)(totalPool - platformFee);
-    }
+    //// 🔹 NEW: Get Pool winning amount
+    //public int GetPoolWinningAmount()
+    //{
+    //    double totalPool = bid?.totalBet ?? 100;
+    //    int platformFee = GetPlatformFee((int)totalPool);
+    //    return (int)(totalPool - platformFee);
+    //}
     
-    // 🔹 NEW: Get Deals winning amount  
-    public int GetDealsWinningAmount()
-    {
-        double totalPool = bid?.totalBet ?? 100;
-        int platformFee = GetPlatformFee((int)totalPool);
-        return (int)(totalPool - platformFee);
-    }
+    //// 🔹 NEW: Get Deals winning amount  
+    //public int GetDealsWinningAmount()
+    //{
+    //    double totalPool = bid?.totalBet ?? 100;
+    //    int platformFee = GetPlatformFee((int)totalPool);
+    //    return (int)(totalPool - platformFee);
+    //}
     #endregion
     
     #region Deals Rummy Management

@@ -13,6 +13,7 @@ public class Bid
     public int entry { get; private set; }
     public int win { get; private set; }
     public int bonusPoints { get; private set; }
+    public double totalBet { get; private set; }
     public int pointsToWin { get; private set; }
 
     public Bid(int id, GameType gameType, CurrencyType currencyType, int entry, int win, int bonusPoints, int pointsToWin)

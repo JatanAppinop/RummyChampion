@@ -1,0 +1,33 @@
+pluginManagement {
+    repositories {
+        
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+}
+
+include ':launcher', ':unityLibrary'
+
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        
+        google()
+        mavenCentral()
+// Android Resolver Repos Start
+        def unityProjectPath = $/file:///D:/Repo Transfer/RummyChampion/$.replace("\\", "/")
+        maven {
+            url "https://repo.maven.apache.org/maven2" // Assets/Appinop/GetPhoneNumber/Editor/phoneNumberDependencies.xml:5, Assets/Appinop/SecureWebView/Editor/secureWebviewDependencies.xml:5
+        }
+        maven {
+            url "https://maven.google.com" // Packages/com.unitynative.toasts/Editor/UnityNativeToastsDependencies.xml:7
+        }
+        mavenLocal()
+// Android Resolver Repos End
+        flatDir {
+            dirs "${project(':unityLibrary').projectDir}/libs"
+        }
+    }
+}

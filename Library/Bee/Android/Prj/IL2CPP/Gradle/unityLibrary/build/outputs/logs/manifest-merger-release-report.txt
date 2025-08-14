@@ -1,0 +1,191 @@
+-- Merging decision tree log ---
+manifest
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:2:1-38:12
+INJECTED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:2:1-38:12
+INJECTED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:2:1-38:12
+	package
+		INJECTED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:2:1-38:12
+		INJECTED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml
+	xmlns:tools
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:2:70-116
+	xmlns:android
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:2:11-69
+uses-permission#android.permission.REQUEST_INSTALL_PACKAGES
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:3:3-81
+	android:name
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:3:20-78
+uses-permission#android.permission.WRITE_EXTERNAL_STORAGE
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:4:3-79
+	android:name
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:4:20-76
+uses-permission#android.permission.READ_EXTERNAL_STORAGE
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:5:3-78
+	android:name
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:5:20-75
+uses-permission#android.permission.QUERY_ALL_PACKAGES
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:6:3-75
+	android:name
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:6:20-72
+uses-permission#android.permission.INTERNET
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:7:3-65
+	android:name
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:7:20-62
+uses-feature#0x00030000
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:8:3-52
+	android:glEsVersion
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:8:17-49
+uses-feature#android.hardware.vulkan.version
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:9:3-91
+	android:required
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:9:64-88
+	android:name
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:9:17-63
+uses-feature#android.hardware.touchscreen
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:10:3-88
+	android:required
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:10:61-85
+	android:name
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:10:17-60
+uses-feature#android.hardware.touchscreen.multitouch
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:11:3-99
+	android:required
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:11:72-96
+	android:name
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:11:17-71
+uses-feature#android.hardware.touchscreen.multitouch.distinct
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:12:3-108
+	android:required
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:12:81-105
+	android:name
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:12:17-80
+application
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:13:3-37:17
+	android:extractNativeLibs
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:13:16-48
+provider#androidx.core.content.FileProvider
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:14:5-16:16
+	android:grantUriPermissions
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:14:147-181
+	android:authorities
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:14:65-121
+	android:exported
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:14:122-146
+	android:name
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:14:15-64
+meta-data#android.support.FILE_PROVIDER_PATHS
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:15:7-110
+	android:resource
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:15:69-107
+	android:name
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:15:18-68
+meta-data#unity.splash-mode
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:17:5-69
+	android:value
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:17:49-66
+	android:name
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:17:16-48
+meta-data#unity.splash-enable
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:18:5-74
+	android:value
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:18:51-71
+	android:name
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:18:16-50
+meta-data#unity.launch-fullscreen
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:19:5-78
+	android:value
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:19:55-75
+	android:name
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:19:16-54
+meta-data#unity.render-outside-safearea
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:20:5-84
+	android:value
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:20:61-81
+	android:name
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:20:16-60
+meta-data#notch.config
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:21:5-81
+	android:value
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:21:44-78
+	android:name
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:21:16-43
+meta-data#unity.auto-report-fully-drawn
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:22:5-84
+	android:value
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:22:61-81
+	android:name
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:22:16-60
+activity#com.appinon.rummychampion.CustomUnityPlayerActivity
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:23:5-36:16
+	android:screenOrientation
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:23:124-164
+	android:launchMode
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:23:165-196
+	android:hardwareAccelerated
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:23:414-449
+	android:exported
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:23:450-473
+	android:resizeableActivity
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:23:379-413
+	android:configChanges
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:23:197-378
+	android:theme
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:23:82-123
+	android:name
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:23:15-81
+intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:24:7-27:23
+category#android.intent.category.LAUNCHER
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:25:9-69
+	android:name
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:25:19-66
+action#android.intent.action.MAIN
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:26:9-61
+	android:name
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:26:17-58
+intent-filter#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+category:name:android.intent.category.DEFAULT+data:host:rummychampions+data:scheme:open
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:28:7-33:23
+category#android.intent.category.DEFAULT
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:29:9-68
+	android:name
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:29:19-65
+category#android.intent.category.BROWSABLE
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:30:9-70
+	android:name
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:30:19-67
+data
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:31:9-69
+	android:host
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:31:37-66
+	android:scheme
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:31:15-36
+action#android.intent.action.VIEW
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:32:9-61
+	android:name
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:32:17-58
+meta-data#unityplayer.UnityActivity
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:34:7-82
+	android:value
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:34:59-79
+	android:name
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:34:18-58
+meta-data#notch_support
+ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:35:7-70
+	android:value
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:35:47-67
+	android:name
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml:35:18-46
+uses-sdk
+INJECTED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml
+INJECTED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml
+INJECTED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml
+INJECTED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml
+		INJECTED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml
+		ADDED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml
+		INJECTED from D:\Repo Transfer\RummyChampion\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\AndroidManifest.xml

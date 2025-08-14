@@ -1,0 +1,50 @@
+[
+    {
+        "merged": "com.appinon.rummychampion.launcher-merged_res-30:/mipmap-ldpi_app_icon.png.flat",
+        "source": "com.appinon.rummychampion.launcher-main-31:/mipmap-ldpi/app_icon.png"
+    },
+    {
+        "merged": "com.appinon.rummychampion.launcher-merged_res-30:/mipmap-hdpi_app_icon.png.flat",
+        "source": "com.appinon.rummychampion.launcher-main-31:/mipmap-hdpi/app_icon.png"
+    },
+    {
+        "merged": "com.appinon.rummychampion.launcher-merged_res-30:/mipmap-xxhdpi_app_icon_round.png.flat",
+        "source": "com.appinon.rummychampion.launcher-main-31:/mipmap-xxhdpi/app_icon_round.png"
+    },
+    {
+        "merged": "com.appinon.rummychampion.launcher-merged_res-30:/mipmap-xhdpi_app_icon.png.flat",
+        "source": "com.appinon.rummychampion.launcher-main-31:/mipmap-xhdpi/app_icon.png"
+    },
+    {
+        "merged": "com.appinon.rummychampion.launcher-merged_res-30:/mipmap-mdpi_app_icon_round.png.flat",
+        "source": "com.appinon.rummychampion.launcher-main-31:/mipmap-mdpi/app_icon_round.png"
+    },
+    {
+        "merged": "com.appinon.rummychampion.launcher-merged_res-30:/mipmap-xhdpi_app_icon_round.png.flat",
+        "source": "com.appinon.rummychampion.launcher-main-31:/mipmap-xhdpi/app_icon_round.png"
+    },
+    {
+        "merged": "com.appinon.rummychampion.launcher-merged_res-30:/mipmap-mdpi_app_icon.png.flat",
+        "source": "com.appinon.rummychampion.launcher-main-31:/mipmap-mdpi/app_icon.png"
+    },
+    {
+        "merged": "com.appinon.rummychampion.launcher-merged_res-30:/mipmap-hdpi_app_icon_round.png.flat",
+        "source": "com.appinon.rummychampion.launcher-main-31:/mipmap-hdpi/app_icon_round.png"
+    },
+    {
+        "merged": "com.appinon.rummychampion.launcher-merged_res-30:/mipmap-ldpi_app_icon_round.png.flat",
+        "source": "com.appinon.rummychampion.launcher-main-31:/mipmap-ldpi/app_icon_round.png"
+    },
+    {
+        "merged": "com.appinon.rummychampion.launcher-merged_res-30:/mipmap-xxxhdpi_app_icon_round.png.flat",
+        "source": "com.appinon.rummychampion.launcher-main-31:/mipmap-xxxhdpi/app_icon_round.png"
+    },
+    {
+        "merged": "com.appinon.rummychampion.launcher-merged_res-30:/mipmap-xxxhdpi_app_icon.png.flat",
+        "source": "com.appinon.rummychampion.launcher-main-31:/mipmap-xxxhdpi/app_icon.png"
+    },
+    {
+        "merged": "com.appinon.rummychampion.launcher-merged_res-30:/mipmap-xxhdpi_app_icon.png.flat",
+        "source": "com.appinon.rummychampion.launcher-main-31:/mipmap-xxhdpi/app_icon.png"
+    }
+]

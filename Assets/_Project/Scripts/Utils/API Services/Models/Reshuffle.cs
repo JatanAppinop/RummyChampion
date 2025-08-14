@@ -117,34 +117,34 @@ public class ShuffleValidation
     public int estimatedTime; // Estimated time in seconds
 }
 
-[System.Serializable]
-public class DeckStatus
-{
-    public string deckId;
-    public string matchId;
-    public string deckType; // "main", "player", "discard", "special"
-    public int totalCards;
-    public int cardsRemaining;
-    public bool isEmpty;
-    public bool needsReshuffle;
-    public Cards topCard;
-    public Cards bottomCard; // For certain game modes
-    public DateTime lastAccessed;
-    public int accessCount; // How many times accessed
-    public bool isLocked; // Temporarily locked during operations
+//[System.Serializable]
+//public class DeckStatus
+//{
+//    public string deckId;
+//    public string matchId;
+//    public string deckType; // "main", "player", "discard", "special"
+//    public int totalCards;
+//    public int cardsRemaining;
+//    public bool isEmpty;
+//    public bool needsReshuffle;
+//    public Cards topCard;
+//    public Cards bottomCard; // For certain game modes
+//    public DateTime lastAccessed;
+//    public int accessCount; // How many times accessed
+//    public bool isLocked; // Temporarily locked during operations
     
-    // Shuffle History
-    public List<ShuffleEvent> shuffleHistory;
-    public DateTime lastShuffleTime;
-    public int timesShuffled;
-    public string lastShuffleReason;
-    public string shufflePattern; // Pattern of when shuffles occur
+//    // Shuffle History
+//    public List<ShuffleEvent> shuffleHistory;
+//    public DateTime lastShuffleTime;
+//    public int timesShuffled;
+//    public string lastShuffleReason;
+//    public string shufflePattern; // Pattern of when shuffles occur
     
-    // Security
-    public string integrityHash; // Hash of current card order
-    public bool integrityValid;
-    public DateTime lastIntegrityCheck;
-}
+//    // Security
+//    public string integrityHash; // Hash of current card order
+//    public bool integrityValid;
+//    public DateTime lastIntegrityCheck;
+//}
 
 [System.Serializable]
 public class ShuffleEvent
