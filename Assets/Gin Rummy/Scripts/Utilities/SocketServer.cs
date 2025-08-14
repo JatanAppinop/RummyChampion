@@ -110,9 +110,36 @@ public class RummySocketServer : SingletonWithGameobject<RummySocketServer>
 
         socket.OnConnected += (sender, e) =>
         {
-            Debug.Log("Game Server Connected");
-
+            Debug.Log("✅ [CONNECTION] Game Server Connected successfully");
         };
+
+        // 🔧 FIX: Add connection error handler
+        socket.OnUnityThread("connection_error", response =>
+        {
+            try
+            {
+                Debug.LogError($"❌ [CONNECTION ERROR] Backend connection error received: {response}");
+                
+                var errorData = response.GetValue<Dictionary<string, object>>();
+                if (errorData != null)
+                {
+                    string errorMessage = errorData.ContainsKey("error") ? errorData["error"].ToString() : "Unknown connection error";
+                    Debug.LogError($"❌ [CONNECTION ERROR] Error: {errorMessage}");
+                    
+                    if (errorData.ContainsKey("suggestion"))
+                    {
+                        Debug.LogWarning($"💡 [CONNECTION ERROR] Suggestion: {errorData["suggestion"]}");
+                    }
+                    
+                    // Notify other systems about connection error
+                    OnError?.Invoke(errorMessage);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"❌ [CONNECTION ERROR] Failed to handle connection error: {e.Message}");
+            }
+        });
         socket.OnUnityThread(Enum.GetName(typeof(RummySocketEvents), RummySocketEvents.deal_cards), response =>
         {
             try

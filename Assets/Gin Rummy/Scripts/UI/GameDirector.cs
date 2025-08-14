@@ -57,12 +57,64 @@ namespace Rummy
         }
         private async Task ConnectServer()
         {
-            RummySocketServer.Instance.Initialize(APIServices.Instance.GetSocketUrl + "/rummyserver");
+            try
+            {
+                Debug.Log($"🔍 [GAME DIRECTOR] Starting connection to server...");
+                Debug.Log($"🔍 [GAME DIRECTOR] Socket URL: {APIServices.Instance.GetSocketUrl}/rummyserver");
+                Debug.Log($"🔍 [GAME DIRECTOR] Match ID: {GameManager.instance.MatchID}");
+                
+                RummySocketServer.Instance.Initialize(APIServices.Instance.GetSocketUrl + "/rummyserver");
 
-            waitingConnectionRoutine = WaitForPlayersToJoin();
-            StartCoroutine(waitingConnectionRoutine);
-            await RummySocketServer.Instance.ConnectServer(GameManager.instance.MatchID);
+                // 🔧 FIX: Add error event listener before connecting
+                RummySocketServer.Instance.OnError.AddListener(HandleConnectionError);
 
+                waitingConnectionRoutine = WaitForPlayersToJoin();
+                StartCoroutine(waitingConnectionRoutine);
+                
+                await RummySocketServer.Instance.ConnectServer(GameManager.instance.MatchID);
+                Debug.Log($"✅ [GAME DIRECTOR] Connection established successfully");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"❌ [GAME DIRECTOR] Failed to connect to server: {e.Message}");
+                HandleConnectionError($"Connection failed: {e.Message}");
+            }
+        }
+
+        // 🔧 FIX: Add connection error handler
+        private void HandleConnectionError(string errorMessage)
+        {
+            Debug.LogError($"❌ [GAME DIRECTOR] Connection error: {errorMessage}");
+            
+            // Stop waiting routine if running
+            if (waitingConnectionRoutine != null)
+            {
+                StopCoroutine(waitingConnectionRoutine);
+            }
+            
+            // Show error to user
+            if (loadingLabel != null)
+            {
+                loadingLabel.SetText($"Connection Error:\n{errorMessage}");
+            }
+            
+            // Start retry mechanism
+            StartCoroutine(RetryConnection());
+        }
+
+        // 🔧 FIX: Add retry mechanism
+        private IEnumerator RetryConnection()
+        {
+            yield return new WaitForSeconds(2);
+            
+            Debug.Log($"🔄 [GAME DIRECTOR] Retrying connection...");
+            if (loadingLabel != null)
+            {
+                loadingLabel.SetText("Retrying connection...");
+            }
+            
+            // Retry connection
+            _ = ConnectServer();
         }
 
 
