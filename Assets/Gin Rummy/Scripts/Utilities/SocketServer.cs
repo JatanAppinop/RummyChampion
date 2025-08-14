@@ -224,6 +224,30 @@ public class RummySocketServer : SingletonWithGameobject<RummySocketServer>
             OnGameEnded?.Invoke();
         });
 
+        // 🔹 MISSING: Player Ready Response Handler
+        socket.OnUnityThread(Enum.GetName(typeof(RummySocketEvents), RummySocketEvents.player_ready), response =>
+        {
+            try
+            {
+                Debug.Log($"[Socket] Received: player_ready response - <color=green>{response}</color>");
+                // Parse the response to get next game event
+                var responseParsed = response.GetValue<Dictionary<string, object>>();
+                
+                if (responseParsed.ContainsKey("nextEvent"))
+                {
+                    string nextEvent = responseParsed["nextEvent"].ToString();
+                    Debug.Log($"[Socket] Next event after player_ready: {nextEvent}");
+                    
+                    // Handle the next event based on what backend says
+                    HandlePlayerReadyResponse(nextEvent, responseParsed);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Failed to handle player_ready response: {e.Message}");
+            }
+        });
+
         socket.OnUnityThread(Enum.GetName(typeof(RummySocketEvents), RummySocketEvents.start_turn), response =>
         {
             Debug.Log($"[Socket] Received: start_turn - <color=green>{response}</color>");
@@ -480,6 +504,62 @@ public class RummySocketServer : SingletonWithGameobject<RummySocketServer>
         {
             Debug.LogError($"Failed to send enhanced event {eventName}: {e.Message}");
             throw;
+        }
+    }
+
+    // 🔹 MISSING: Handle Player Ready Response Method
+    private void HandlePlayerReadyResponse(string nextEvent, Dictionary<string, object> responseData)
+    {
+        try
+        {
+            Debug.Log($"[Socket] Handling player_ready response with next event: {nextEvent}");
+            
+            switch (nextEvent.ToLower())
+            {
+                case "start_game":
+                case "game_start":
+                    Debug.Log("[Socket] Game start event triggered from player_ready");
+                    // Trigger game start logic
+                    OnGameStart?.Invoke();
+                    break;
+                    
+                case "start_turn":
+                    if (responseData.ContainsKey("playerId"))
+                    {
+                        string playerId = responseData["playerId"].ToString();
+                        Debug.Log($"[Socket] Start turn for player: {playerId}");
+                        OnStartTurn?.Invoke(playerId);
+                    }
+                    break;
+                    
+                case "next_turn":
+                    if (responseData.ContainsKey("playerId"))
+                    {
+                        string playerId = responseData["playerId"].ToString();
+                        Debug.Log($"[Socket] Next turn for player: {playerId}");
+                        OnNextTurn?.Invoke(playerId);
+                    }
+                    break;
+                    
+                case "deal_cards":
+                case "card_distribution":
+                    Debug.Log("[Socket] Card distribution event triggered");
+                    // Handle card distribution if needed
+                    break;
+                    
+                case "wait_for_players":
+                    Debug.Log("[Socket] Waiting for more players");
+                    // Handle waiting state
+                    break;
+                    
+                default:
+                    Debug.LogWarning($"[Socket] Unknown next event after player_ready: {nextEvent}");
+                    break;
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[Socket] Error handling player_ready response: {e.Message}");
         }
     }
 

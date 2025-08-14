@@ -788,9 +788,152 @@ public class GameManager : MonoBehaviour
         Debug.LogError($"New Turn Phase Count: " + turnPhases.Count);
     }
 
-    private void StartGame()
+    public async void StartGame()
     {
+        Debug.Log($"Starting Game with mode: {gameMode}");
+        
+        // 🔹 INITIALIZE GAME MODE SPECIFIC LOGIC (MOVED FROM TEST TO LIVE)
+        InitializeGameModeLogic();
+        
+        if (IsGameEnded())
+        {
+            Debug.LogError("Game already ended");
+            return;
+        }
+
+        gamePhase = GamePhase.Dealing;
+        StartNewMatch();
+
+        await Task.Delay(1000);
         TakeOrPassGamePhase();
+
+        // Send a "player_ready" event to the server asynchronously with error handling
+        var task = RummySocketServer.Instance.SendEvent(RummySocketEvents.player_ready)
+            .ContinueWith(t => Debug.Log("player_ready event sent successfully"))
+            .ContinueWith(t =>
+            {
+                if (t.Exception != null)
+                    Debug.LogError($"Failed to send player_ready event: {t.Exception}");
+            });
+    }
+    
+    // 🔹 NEW: Live Game Mode Initialization (moved from test code)
+    private void InitializeGameModeLogic()
+    {
+        Debug.Log($"[GameManager] Initializing live logic for {gameMode} mode");
+        
+        switch (gameMode)
+        {
+            case GameMode.Pool:
+                InitializePoolRummyLive();
+                break;
+            case GameMode.Deals:
+                InitializeDealsRummyLive();
+                break;
+            case GameMode.Points:
+                InitializePointsRummyLive();
+                break;
+            default:
+                Debug.LogWarning($"Unknown game mode: {gameMode}");
+                break;
+        }
+    }
+    
+    // 🔹 NEW: Live Pool Rummy Initialization
+    private void InitializePoolRummyLive()
+    {
+        Debug.Log("[GameManager] Setting up Pool Rummy live functionality");
+        
+        // Reset pool game state
+        poolGameEnded = false;
+        eliminatedPlayers.Clear();
+        
+        // Set elimination threshold based on game type
+        int threshold = GetEliminationThreshold();
+        Debug.Log($"Pool Rummy elimination threshold: {threshold} points");
+        
+        // Initialize all players for Pool Rummy
+        foreach (Player player in playerList)
+        {
+            player.ResetForNewGame(); // Reset cumulative scores
+            player.playerUI?.UpdateGameModeSpecificUI(GameMode.Pool);
+            player.playerUI?.UpdateCumulativeScore(0);
+            
+            // Subscribe to player events for Pool Rummy
+            player.OnPlayerDropped -= OnPlayerDropped;
+            player.OnPlayerDropped += OnPlayerDropped;
+            player.OnPlayerEliminated -= OnPlayerEliminated;
+            player.OnPlayerEliminated += OnPlayerEliminated;
+        }
+        
+        // Update UI for Pool Rummy
+        gameModeIndicator?.UpdateGameModeDisplay();
+        dropButton?.UpdateDropButtonVisibility();
+        
+        Debug.Log($"Pool Rummy initialized with {playerList.Count} players");
+    }
+    
+    // 🔹 NEW: Live Deals Rummy Initialization
+    private void InitializeDealsRummyLive()
+    {
+        Debug.Log("[GameManager] Setting up Deals Rummy live functionality");
+        
+        // Get number of deals from table data or use default
+        int numberOfDeals = tableData?.gameType?.Contains("Deal") == true ? 
+            GetDealsFromGameType(tableData.gameType) : Constants.DEFAULT_DEALS_COUNT;
+        
+        Debug.Log($"Deals Rummy: {numberOfDeals} deals configured");
+        
+        // Initialize deals management
+        InitializeDealsRummy(numberOfDeals);
+        
+        // Initialize all players for Deals Rummy
+        foreach (Player player in playerList)
+        {
+            player.ResetForNewGame(); // Reset for first deal
+            player.playerUI?.UpdateGameModeSpecificUI(GameMode.Deals);
+            player.playerUI?.UpdateCumulativeScore(0);
+        }
+        
+        // Update UI for Deals Rummy
+        gameModeIndicator?.UpdateGameModeDisplay();
+        gameModeIndicator?.OnDealChanged();
+        
+        Debug.Log($"Deals Rummy initialized: Deal 1 of {numberOfDeals}");
+    }
+    
+    // 🔹 NEW: Live Points Rummy Initialization (enhanced)
+    private void InitializePointsRummyLive()
+    {
+        Debug.Log("[GameManager] Setting up Points Rummy live functionality");
+        
+        // Points Rummy doesn't need special initialization as it's per-round
+        // Just ensure UI is updated
+        foreach (Player player in playerList)
+        {
+            player.playerUI?.UpdateGameModeSpecificUI(GameMode.Points);
+        }
+        
+        gameModeIndicator?.UpdateGameModeDisplay();
+        
+        // Calculate and display per-point value
+        double perPointValue = GetPerPointValue();
+        Debug.Log($"Points Rummy per-point value: ₹{perPointValue:F2}");
+    }
+    
+    // 🔹 NEW: Extract deals count from game type string
+    private int GetDealsFromGameType(string gameType)
+    {
+        if (string.IsNullOrEmpty(gameType)) return Constants.DEFAULT_DEALS_COUNT;
+        
+        // Extract number from strings like "2Deal", "3Deal", etc.
+        string numberPart = gameType.Replace("Deal", "").Replace("Deals", "");
+        if (int.TryParse(numberPart, out int deals))
+        {
+            return Mathf.Clamp(deals, 1, Constants.MAX_DEALS_COUNT);
+        }
+        
+        return Constants.DEFAULT_DEALS_COUNT;
     }
 
     public void CollectCards(bool isCurrentPlayer)
@@ -1345,6 +1488,28 @@ public class GameManager : MonoBehaviour
     public int GetActivePlayersCount()
     {
         return GetActivePlayers().Count;
+    }
+    
+    // 🔹 NEW: Missing method for checking one player remains
+    public bool CheckIfOnlyOnePlayerRemains()
+    {
+        return GetActivePlayersCount() <= 1;
+    }
+    
+    // 🔹 NEW: Get Pool winning amount
+    public int GetPoolWinningAmount()
+    {
+        double totalPool = bid?.totalBet ?? 100;
+        int platformFee = GetPlatformFee((int)totalPool);
+        return (int)(totalPool - platformFee);
+    }
+    
+    // 🔹 NEW: Get Deals winning amount  
+    public int GetDealsWinningAmount()
+    {
+        double totalPool = bid?.totalBet ?? 100;
+        int platformFee = GetPlatformFee((int)totalPool);
+        return (int)(totalPool - platformFee);
     }
     #endregion
     

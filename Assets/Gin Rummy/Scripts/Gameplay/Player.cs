@@ -375,9 +375,27 @@ public class Player
     public void ResetForNewDeal()
     {
         hasPickedCardThisTurn = false;
-        // Don't reset hasDropped or isEliminated - these persist across deals
+        // Keep cumulative scores and deals won for Deals Rummy
     }
-
+    
+    // 🔹 NEW: Reset for new game (Pool/Deals Rummy)
+    public void ResetForNewGame()
+    {
+        // Reset game-specific state
+        hasDropped = false;
+        isEliminated = false;
+        hasPickedCardThisTurn = false;
+        
+        // Reset cumulative score only for new games, not new deals
+        cumulativeScore = 0;
+        dealsWon = 0;
+        
+        // Reset UI
+        playerUI?.ResetEnhancedUI();
+        
+        Debug.Log($"Player {name} reset for new game");
+    }
+    
     public void MarkCardPickedThisTurn()
     {
         hasPickedCardThisTurn = true;

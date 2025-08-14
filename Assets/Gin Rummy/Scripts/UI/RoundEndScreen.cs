@@ -260,82 +260,201 @@ public class RoundEndScreen : IHUD
     
     private void HandleDealsRummyEnd(int winnerDeadwoodScore, int loserDeadwoodScore)
     {
-        // Update cumulative scores for all players
-        winner.player.AddToCumulativeScore(winnerDeadwoodScore);
-        loser.player.AddToCumulativeScore(loserDeadwoodScore);
+        Debug.Log("[RoundEndScreen] Handling Deals Rummy round end");
         
-        // Complete the deal in DealsRummyManager
+        // Update cumulative scores
+        int scoreDifference = loserDeadwoodScore - winnerDeadwoodScore;
+        
+        // Winner gets 0 points, loser gets the difference
+        loser.player.AddToCumulativeScore(scoreDifference);
+        
+        // Update deals won count for winner
+        winner.player.IncrementDealsWon();
+        
+        // Complete the deal through game manager
         gameManager.CompleteDeal(winner.player);
         
-        // Check if this was the last deal
+        // 🔹 LIVE FUNCTIONALITY: Check if this was the final deal
         if (gameManager.GetCurrentDealNumber() >= gameManager.GetTotalDeals())
         {
-            // Final deal completed - show final results
-            int winningAmount = gameManager.GetDealsWinningAmount();
-            int platformFee = gameManager.GetPlatformFee(winningAmount);
-            winningAmount -= platformFee;
-            winningAmount = Mathf.Max(Constants.MINIMUM_WIN_AMOUNT, winningAmount);
-            
-            winner.player.AddScore(winningAmount);
-            FullscreenTextMessage.instance.ShowText($"{winner.player.userData.username} Wins Final Deal!\n₹{winningAmount}", 5f);
-            
-            RummyGameResults(winnerDeadwoodScore, loserDeadwoodScore);
-            Screen.orientation = ScreenOrientation.Portrait;
-            SceneManager.LoadScene((int)Scenes.MainMenu);
+            HandleFinalDealsRummyCompletion();
         }
         else
         {
-            // More deals to play - show round results and continue
-            FullscreenTextMessage.instance.ShowText($"Deal {gameManager.GetCurrentDealNumber()} Won by {winner.player.userData.username}", 3f);
-            
-            // The DealsRummyManager will handle starting the next deal
-            RummyGameResults(winnerDeadwoodScore, loserDeadwoodScore);
+            HandleDealsRummyContinuation();
         }
     }
     
+    // 🔹 NEW: Handle final deal completion in Deals Rummy
+    private void HandleFinalDealsRummyCompletion()
+    {
+        Debug.Log("[RoundEndScreen] Final deal completed - determining Deals Rummy winner");
+        
+        // Find overall winner based on deals won and cumulative score
+        Player overallWinner = DetermineDealsRummyWinner();
+        
+        if (overallWinner != null)
+        {
+            int winningAmount = GetDealsRummyWinningAmount();
+            overallWinner.AddScore(winningAmount);
+            
+            FullscreenTextMessage.instance.ShowText(
+                $"{overallWinner.userData.username} Wins Deals Rummy!\n₹{winningAmount}", 5f);
+            
+            Debug.Log($"Deals Rummy completed. Winner: {overallWinner.name}");
+        }
+        
+        // End the game
+        gameManager.gamePhase = GamePhase.GameEnded;
+    }
+    
+    // 🔹 NEW: Handle continuation to next deal
+    private void HandleDealsRummyContinuation()
+    {
+        Debug.Log($"[RoundEndScreen] Deal {gameManager.GetCurrentDealNumber()} completed, continuing to next deal");
+        
+        FullscreenTextMessage.instance.ShowText(
+            $"Deal {gameManager.GetCurrentDealNumber()} Won by {winner.player.userData.username}", 3f);
+        
+        // Reset players for next deal (but keep cumulative scores)
+        foreach (Player player in gameManager.playerList)
+        {
+            player.ResetForNewDeal();
+        }
+        
+        // Start next deal after a delay
+        StartCoroutine(StartNextDealWithDelay());
+    }
+    
+    // 🔹 NEW: Start next deal with delay
+    private IEnumerator StartNextDealWithDelay()
+    {
+        yield return new WaitForSeconds(3f);
+        
+        Debug.Log("[RoundEndScreen] Starting next deal");
+        gameManager.StartNewDeal();
+    }
+    
+    // 🔹 NEW: Determine overall winner in Deals Rummy
+    private Player DetermineDealsRummyWinner()
+    {
+        var players = gameManager.playerList.OrderByDescending(p => p.dealsWon)
+                                          .ThenBy(p => p.cumulativeScore)
+                                          .ToList();
+        
+        return players.FirstOrDefault();
+    }
+    
+    // 🔹 NEW: Calculate Deals Rummy winning amount
+    private int GetDealsRummyWinningAmount()
+    {
+        // Calculate based on total bet amount and player count
+        double totalPool = gameManager.bid?.totalBet ?? 100;
+        int platformFee = gameManager.GetPlatformFee((int)totalPool);
+        return (int)(totalPool - platformFee);
+    }
+
     private void HandlePoolRummyEnd(int winnerDeadwoodScore, int loserDeadwoodScore)
     {
-        // Add scores to cumulative totals
-        winner.player.AddToCumulativeScore(winnerDeadwoodScore);
-        loser.player.AddToCumulativeScore(loserDeadwoodScore);
+        Debug.Log("[RoundEndScreen] Handling Pool Rummy round end");
         
-        // Check for eliminations
-        winner.player.CheckForElimination();
-        loser.player.CheckForElimination();
+        // Update cumulative scores
+        int scoreDifference = loserDeadwoodScore - winnerDeadwoodScore;
         
-        // Check if only one player remains (game should end)
-        if (gameManager.CheckIfOnlyOnePlayerRemains())
+        // Winner gets 0 points, loser gets the difference
+        loser.player.AddToCumulativeScore(scoreDifference);
+        
+        // 🔹 LIVE FUNCTIONALITY: Check for elimination after score update
+        CheckForPlayerElimination();
+        
+        // 🔹 LIVE FUNCTIONALITY: Check if Pool game should end
+        if (gameManager.GetActivePlayersCount() <= 1)
         {
-            // Pool game over - determine winner and award pool
-            List<Player> activePlayers = gameManager.GetActivePlayers();
-            Player poolWinner = activePlayers.Count > 0 ? activePlayers[0] : null;
-            if (poolWinner != null)
-            {
-                int winningAmount = gameManager.GetPoolWinningAmount();
-                poolWinner.AddScore(winningAmount);
-                FullscreenTextMessage.instance.ShowText($"{poolWinner.userData.username} Wins Pool!\n₹{winningAmount}", 5f);
-            }
-            
-            RummyGameResults(winnerDeadwoodScore, loserDeadwoodScore);
-            Screen.orientation = ScreenOrientation.Portrait;
-            SceneManager.LoadScene((int)Scenes.MainMenu);
+            HandlePoolGameCompletion();
         }
         else
         {
-            // Pool continues - show round results
-            string eliminationInfo = "";
-            if (winner.player.isEliminated)
-                eliminationInfo += $"{winner.player.userData.username} ELIMINATED! ";
-            if (loser.player.isEliminated)
-                eliminationInfo += $"{loser.player.userData.username} ELIMINATED! ";
-            
-            if (!string.IsNullOrEmpty(eliminationInfo))
-            {
-                FullscreenTextMessage.instance.ShowText(eliminationInfo, Constants.ELIMINATION_NOTIFICATION_TIME);
-            }
-            
-            FullscreenTextMessage.instance.ShowText($"Round Won by {winner.player.userData.username}", 3f);
-            RummyGameResults(winnerDeadwoodScore, loserDeadwoodScore);
+            HandlePoolGameContinuation();
         }
+    }
+    
+    // 🔹 NEW: Check for player elimination in Pool Rummy
+    private void CheckForPlayerElimination()
+    {
+        int eliminationThreshold = gameManager.GetEliminationThreshold();
+        
+        foreach (Player player in gameManager.playerList)
+        {
+            if (!player.isEliminated && player.cumulativeScore >= eliminationThreshold)
+            {
+                Debug.Log($"Player {player.name} eliminated with {player.cumulativeScore} points");
+                player.CheckForElimination();
+                
+                string eliminationInfo = $"{player.userData.username} ELIMINATED! ";
+                eliminationInfo += $"(Crossed {eliminationThreshold} points)";
+                FullscreenTextMessage.instance.ShowText(eliminationInfo, 4f);
+            }
+        }
+    }
+    
+    // 🔹 NEW: Handle Pool game completion
+    private void HandlePoolGameCompletion()
+    {
+        Debug.Log("[RoundEndScreen] Pool game completed - only one player remains");
+        
+        Player poolWinner = gameManager.GetActivePlayers().FirstOrDefault();
+        if (poolWinner != null)
+        {
+            int winningAmount = GetPoolWinningAmount();
+            poolWinner.AddScore(winningAmount);
+            
+            FullscreenTextMessage.instance.ShowText(
+                $"{poolWinner.userData.username} Wins Pool!\n₹{winningAmount}", 5f);
+            
+            Debug.Log($"Pool Rummy completed. Winner: {poolWinner.name}");
+        }
+        
+        // End the game
+        gameManager.gamePhase = GamePhase.GameEnded;
+    }
+    
+    // 🔹 NEW: Handle Pool game continuation
+    private void HandlePoolGameContinuation()
+    {
+        Debug.Log("[RoundEndScreen] Pool round completed, game continues");
+        
+        FullscreenTextMessage.instance.ShowText(
+            $"Round Won by {winner.player.userData.username}", 3f);
+        
+        // Reset for next round (keep cumulative scores)
+        foreach (Player player in gameManager.playerList)
+        {
+            if (!player.hasDropped && !player.isEliminated)
+            {
+                player.ResetForNewDeal(); // Reset turn-specific state
+            }
+        }
+        
+        // Continue to next round after a delay
+        StartCoroutine(StartNextRoundWithDelay());
+    }
+    
+    // 🔹 NEW: Start next round with delay
+    private IEnumerator StartNextRoundWithDelay()
+    {
+        yield return new WaitForSeconds(3f);
+        
+        Debug.Log("[RoundEndScreen] Starting next Pool round");
+        // Reset and start new round but keep Pool game state
+        gameManager.StartNewMatch();
+    }
+    
+    // 🔹 NEW: Calculate Pool winning amount
+    private int GetPoolWinningAmount()
+    {
+        // Calculate based on total bet amount and player count
+        double totalPool = gameManager.bid?.totalBet ?? 100;
+        int platformFee = gameManager.GetPlatformFee((int)totalPool);
+        return (int)(totalPool - platformFee);
     }
 }

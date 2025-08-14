@@ -15,8 +15,11 @@ public class RummyTestManager : MonoBehaviour
     public TextMeshProUGUI testStatusText;
     
     [Header("Test Configuration")]
-    public bool enableTestMode = true;
+    public bool enableTestMode = false; // 🔹 CHANGED: Disabled for production - only enable for debugging
     public GameMode testGameMode = GameMode.Pool;
+    
+    // 🔹 WARNING: This is a test manager and should NOT be used in live production builds
+    // All test functionality has been moved to live game systems
     
     private GameManager gameManager;
     private DropButton dropButton;
@@ -25,6 +28,17 @@ public class RummyTestManager : MonoBehaviour
     
     private void Awake()
     {
+        // 🔹 PRODUCTION MODE: Test manager is disabled by default
+        if (!enableTestMode)
+        {
+            Debug.LogWarning("[RummyTestManager] Test manager is disabled for production. All functionality moved to live systems.");
+            gameObject.SetActive(false);
+            return;
+        }
+        
+        // Only run in debug/test mode
+        Debug.LogWarning("[RummyTestManager] ⚠️ TEST MODE ENABLED - This should be DISABLED in production builds!");
+        
         if (enableTestMode)
         {
             gameManager = FindObjectOfType<GameManager>();
