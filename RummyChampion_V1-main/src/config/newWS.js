@@ -29,6 +29,8 @@ let dealTracker = {}; // Tracks the number of deals for each match (for Deal Rum
 let cumulativeScores = {}; // Tracks cumulative scores for each player in a match (for Deal Rummy and Pool Rummy)
 let matchWins = {}; // Tracks the number of wins for each player in a match (for Deal Rummy)
 let poolScores = {}; // Tracks scores for each player in Pool Rummy
+let playerGameData = {}; // 🔹 NEW: Tracks enhanced player data from player_ready events
+let eliminatedPlayers = {}; // 🔹 NEW: Tracks eliminated players in Pool Rummy
 
 const fetchCard = async (deckId, numCards = 1) => {
   try {
@@ -138,77 +140,125 @@ module.exports = {
             shuffleConfirmations[matchId] = new Set();
           }
 
-          // =============== EVENT: player_ready =================
-          socket.on("player_ready", async () => {
-            if (!playerCount) {
-              console.error("Player count is not defined");
-              return;
-            }
-            rummyPlayerReadiness[matchId].add(playerId);
-            rummyConnectedPlayers[matchId].push(playerId);
-
-            if (rummyPlayerReadiness[matchId].size === playerCount) {
-              console.log("All players are ready. Starting the Rummy match.");
-
-              // Reset game state for a new deal (only for Deal Rummy)
-              if (gameType === "Deals" && dealTracker[matchId] > 0) {
-                playerHands[matchId] = {};
-                drawPiles[matchId] = [];
-                discardPiles[matchId] = [];
-                cardCache[matchId] = {};
+          // =============== EVENT: player_ready (ENHANCED) =================
+          socket.on("player_ready", async (playerReadyData) => {
+            try {
+              console.log(`🎮 [Backend] Enhanced player_ready received from ${playerId}:`, playerReadyData);
+              
+              if (!playerCount) {
+                console.error("❌ Player count is not defined");
+                socket.emit("player_ready", { 
+                  status: "error", 
+                  reason: "Player count not defined",
+                  nextEvent: "wait_for_players"
+                });
+                return;
               }
 
-              try {
-                const deckCount = playerCount > 2 ? 2 : 1;
-                // const response = await axios.get(
-                //   `https://deckofcardsapi.com/api/deck/new/?jokers_enabled=true`
-                // );
-                // const deckId = response.data.deck_id;
-                // console.log("🚀 ~ socket.on ~ deckId:", deckId);
-
-                // const drawResponse = await axios.get(
-                //   `https://deckofcardsapi.com/api/deck/${deckId}/draw/?count=${
-                //     54 * deckCount
-                //   }`
-                // );
-
-                const drawResponse = newDeck(deckCount);
-                console.log("🚀 ~ socket.on ~ drawResponse:", drawResponse);
-
-                drawPiles[matchId] = shuffleDeck(drawResponse.cards);
-                console.log(
-                  "🚀 ~ socket.on ~  drawPiles[matchId]:",
-                  drawPiles[matchId]
-                );
-
-                game.players.forEach((player) => {
-                  playerHands[matchId][player] = [];
+              // Handle enhanced player ready data if provided
+              if (playerReadyData && typeof playerReadyData === 'object') {
+                console.log(`✅ [Backend] Processing enhanced player data:`, {
+                  playerId: playerReadyData.playerId,
+                  playerName: playerReadyData.playerName,
+                  gameMode: playerReadyData.gameMode,
+                  gameType: playerReadyData.gameType,
+                  isReady: playerReadyData.isReady
                 });
-
-                // Deal 13 cards to each player
-                game.players.forEach((player) => {
-                  for (let i = 0; i < 13; i++) {
-                    const card = drawPiles[matchId].pop();
-                    playerHands[matchId][player].push(card);
-                  }
-                });
-
-                const lastCard = drawPiles[matchId].pop();
-                discardPiles[matchId].push(lastCard);
-                console.log("🚀 ~ socket.on ~ drawPiles:", drawPiles[matchId]);
-
-                RummyServerNamespace.to(matchId).emit("deal_cards", {
-                  players: game.players.map((player) => ({
-                    playerId: player,
-                    cards: playerHands[matchId][player],
-                  })),
-                  lastCard,
-                });
-              } catch (error) {
-                console.error("Error fetching deck from API:", error);
+                
+                // Validate player data
+                if (playerReadyData.playerId !== playerId) {
+                  console.warn(`⚠️ [Backend] Player ID mismatch: expected ${playerId}, got ${playerReadyData.playerId}`);
+                }
+                
+                // Store additional player info for game management
+                if (!playerGameData[matchId]) {
+                  playerGameData[matchId] = {};
+                }
+                playerGameData[matchId][playerId] = {
+                  playerName: playerReadyData.playerName,
+                  gameMode: playerReadyData.gameMode,
+                  gameType: playerReadyData.gameType,
+                  walletBalance: playerReadyData.walletBalance,
+                  clientVersion: playerReadyData.clientVersion,
+                  deviceInfo: playerReadyData.deviceInfo,
+                  readyTime: new Date()
+                };
               }
-            }
-          });
+
+              rummyPlayerReadiness[matchId].add(playerId);
+              rummyConnectedPlayers[matchId].push(playerId);
+
+              console.log(`🎯 [Backend] Players ready: ${rummyPlayerReadiness[matchId].size}/${playerCount}`);
+
+              // Send acknowledgment back to client
+              socket.emit("player_ready", {
+                status: "ready",
+                playerId: playerId,
+                readyPlayers: rummyPlayerReadiness[matchId].size,
+                totalPlayers: playerCount,
+                nextEvent: rummyPlayerReadiness[matchId].size === playerCount ? "start_game" : "wait_for_players"
+              });
+
+              if (rummyPlayerReadiness[matchId].size === playerCount) {
+                console.log("🚀 [Backend] All players are ready. Starting the Rummy match.");
+
+                // Reset game state for a new deal (only for Deal Rummy)
+                if (gameType === "Deals" && dealTracker[matchId] > 0) {
+                  playerHands[matchId] = {};
+                  drawPiles[matchId] = [];
+                  discardPiles[matchId] = [];
+                  cardCache[matchId] = {};
+                }
+
+                try {
+                  const deckCount = playerCount > 2 ? 2 : 1;
+                  const drawResponse = newDeck(deckCount);
+                  console.log("🃏 [Backend] Created deck:", drawResponse);
+
+                  drawPiles[matchId] = shuffleDeck(drawResponse.cards);
+                  console.log("🔀 [Backend] Shuffled deck:", drawPiles[matchId].length, "cards");
+
+                  game.players.forEach((player) => {
+                    playerHands[matchId][player] = [];
+                  });
+
+                  // Deal 13 cards to each player
+                  game.players.forEach((player) => {
+                    for (let i = 0; i < 13; i++) {
+                      const card = drawPiles[matchId].pop();
+                      playerHands[matchId][player].push(card);
+                    }
+                  });
+
+                  const lastCard = drawPiles[matchId].pop();
+                  discardPiles[matchId].push(lastCard);
+                  console.log("🎲 [Backend] Dealt cards, remaining in deck:", drawPiles[matchId].length);
+
+                                     RummyServerNamespace.to(matchId).emit("deal_cards", {
+                     players: game.players.map((player) => ({
+                       playerId: player,
+                       cards: playerHands[matchId][player],
+                     })),
+                     lastCard,
+                   });
+                 } catch (error) {
+                   console.error("❌ [Backend] Error setting up game:", error);
+                   socket.emit("player_ready", {
+                     status: "error",
+                     reason: "Game setup failed",
+                     nextEvent: "wait_for_players"
+                   });
+                 }
+               }
+             } catch (error) {
+               console.error("❌ [Backend] Error in player_ready handler:", error);
+               socket.emit("player_ready", {
+                 status: "error",
+                 reason: "Server error processing ready event",
+                 nextEvent: "wait_for_players"
+               });
+             }
+           });
 
           // =============== EVENT: cards_received =================
           socket.on("cards_received", () => {
@@ -816,6 +866,177 @@ module.exports = {
             } catch (error) {
               console.error("Error during disconnect:", error);
               removePlayerFromList(onlinePlayers, playerId);
+            }
+          });
+
+          // =============== ENHANCED GAME EVENT HANDLERS =================
+
+          // Handle player dropped from Pool Rummy
+          socket.on("player_dropped", async (playerDroppedData) => {
+            try {
+              console.log(`🏃 [Backend] Player dropped:`, playerDroppedData);
+              
+              // Update pool scores with penalty
+              if (poolScores[matchId] && poolScores[matchId][playerDroppedData.playerId] !== undefined) {
+                poolScores[matchId][playerDroppedData.playerId] += playerDroppedData.penaltyPoints;
+                console.log(`💰 [Backend] Applied penalty ${playerDroppedData.penaltyPoints} to player ${playerDroppedData.playerId}`);
+              }
+              
+              // Broadcast player dropped event to all clients
+              RummyServerNamespace.to(matchId).emit("player_dropped", {
+                ...playerDroppedData,
+                timestamp: new Date(),
+                poolScores: poolScores[matchId]
+              });
+              
+              console.log(`✅ [Backend] Player drop event broadcasted for match ${matchId}`);
+            } catch (error) {
+              console.error("❌ [Backend] Error handling player_dropped:", error);
+            }
+          });
+
+          // Handle player eliminated from Pool Rummy
+          socket.on("player_eliminated", async (playerEliminatedData) => {
+            try {
+              console.log(`❌ [Backend] Player eliminated:`, playerEliminatedData);
+              
+              // Mark player as eliminated
+              if (!eliminatedPlayers[matchId]) {
+                eliminatedPlayers[matchId] = [];
+              }
+              if (!eliminatedPlayers[matchId].includes(playerEliminatedData.playerId)) {
+                eliminatedPlayers[matchId].push(playerEliminatedData.playerId);
+              }
+              
+              // Broadcast elimination event
+              RummyServerNamespace.to(matchId).emit("player_eliminated", {
+                ...playerEliminatedData,
+                timestamp: new Date(),
+                eliminatedPlayers: eliminatedPlayers[matchId],
+                remainingPlayers: game.players.filter(p => !eliminatedPlayers[matchId].includes(p))
+              });
+              
+              console.log(`✅ [Backend] Player elimination broadcasted for match ${matchId}`);
+            } catch (error) {
+              console.error("❌ [Backend] Error handling player_eliminated:", error);
+            }
+          });
+
+          // Handle deal completed in Deals Rummy
+          socket.on("deal_completed", async (dealCompletedData) => {
+            try {
+              console.log(`🎯 [Backend] Deal completed:`, dealCompletedData);
+              
+              // Update deal tracker
+              if (dealTracker[matchId] !== undefined) {
+                dealTracker[matchId]++;
+              }
+              
+              // Update cumulative scores and deals won
+              if (cumulativeScores[matchId] && dealCompletedData.cumulativeScores) {
+                Object.assign(cumulativeScores[matchId], dealCompletedData.cumulativeScores);
+              }
+              
+              if (matchWins[matchId] && dealCompletedData.dealsWon) {
+                Object.assign(matchWins[matchId], dealCompletedData.dealsWon);
+              }
+              
+              // Broadcast deal completion
+              RummyServerNamespace.to(matchId).emit("deal_completed", {
+                ...dealCompletedData,
+                timestamp: new Date(),
+                totalDealsCompleted: dealTracker[matchId]
+              });
+              
+              console.log(`✅ [Backend] Deal completion broadcasted for match ${matchId}`);
+            } catch (error) {
+              console.error("❌ [Backend] Error handling deal_completed:", error);
+            }
+          });
+
+          // Handle new deal started
+          socket.on("deal_started", async (dealStartedData) => {
+            try {
+              console.log(`🎲 [Backend] New deal started:`, dealStartedData);
+              
+              // Reset game state for new deal
+              rummyPlayerReadiness[matchId] = new Set();
+              cardsDealtTracker[matchId] = new Set();
+              
+              // Broadcast deal start
+              RummyServerNamespace.to(matchId).emit("deal_started", {
+                ...dealStartedData,
+                timestamp: new Date(),
+                gameState: "new_deal"
+              });
+              
+              console.log(`✅ [Backend] Deal start broadcasted for match ${matchId}`);
+            } catch (error) {
+              console.error("❌ [Backend] Error handling deal_started:", error);
+            }
+          });
+
+          // Handle Pool game ended
+          socket.on("pool_game_ended", async (poolGameEndedData) => {
+            try {
+              console.log(`🏆 [Backend] Pool game ended:`, poolGameEndedData);
+              
+              // Broadcast pool game end
+              RummyServerNamespace.to(matchId).emit("pool_game_ended", {
+                ...poolGameEndedData,
+                timestamp: new Date(),
+                finalPoolScores: poolScores[matchId]
+              });
+              
+              // Cleanup pool data
+              delete poolScores[matchId];
+              delete eliminatedPlayers[matchId];
+              
+              console.log(`✅ [Backend] Pool game end broadcasted for match ${matchId}`);
+            } catch (error) {
+              console.error("❌ [Backend] Error handling pool_game_ended:", error);
+            }
+          });
+
+          // Handle cumulative score updates
+          socket.on("cumulative_score_updated", async (cumulativeScoreData) => {
+            try {
+              console.log(`📊 [Backend] Cumulative score updated:`, cumulativeScoreData);
+              
+              // Update cumulative scores
+              if (!cumulativeScores[matchId]) {
+                cumulativeScores[matchId] = {};
+              }
+              cumulativeScores[matchId][cumulativeScoreData.playerId] = cumulativeScoreData.cumulativeScore;
+              
+              // Broadcast score update
+              RummyServerNamespace.to(matchId).emit("cumulative_score_updated", {
+                ...cumulativeScoreData,
+                timestamp: new Date(),
+                allScores: cumulativeScores[matchId]
+              });
+              
+              console.log(`✅ [Backend] Score update broadcasted for match ${matchId}`);
+            } catch (error) {
+              console.error("❌ [Backend] Error handling cumulative_score_updated:", error);
+            }
+          });
+
+          // Handle active players update
+          socket.on("active_players_updated", async (activePlayersData) => {
+            try {
+              console.log(`👥 [Backend] Active players updated:`, activePlayersData);
+              
+              // Broadcast active players update
+              RummyServerNamespace.to(matchId).emit("active_players_updated", {
+                ...activePlayersData,
+                timestamp: new Date(),
+                matchId: matchId
+              });
+              
+              console.log(`✅ [Backend] Active players update broadcasted for match ${matchId}`);
+            } catch (error) {
+              console.error("❌ [Backend] Error handling active_players_updated:", error);
             }
           });
         } catch (error) {
