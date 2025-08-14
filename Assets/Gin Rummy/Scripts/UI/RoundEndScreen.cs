@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Linq;
 
 [System.Serializable]
 public class PlayerCardsArea
@@ -208,33 +209,13 @@ public class RoundEndScreen : IHUD
         }
         else if (gameManager.tableData.gameMode.Contains("Deals"))
         {
-            // Deals Rummy: Winner gets total entry pool after rake deduction
-            winningAmount = gameManager.GetDealsWinningAmount();
-            // 🔹 Deduct platform fee
-            int platformFee = gameManager.GetPlatformFee((int)winningAmount);
-            winningAmount -= platformFee;
-
-            // 🔹 Ensure winnings are never negative
-            winningAmount = Mathf.Max(Constants.MINIMUM_WIN_AMOUNT, (int)winningAmount);
-
-            // 🔹 Add winnings to the winner
-            winner.player.AddScore((int)winningAmount);
-
-            // 🔹 Show winnings on screen
-            FullscreenTextMessage.instance.ShowText(winner.player.userData.username + " Wins ₹" + (int)winningAmount, 5f);
-
-            RummyGameResults(winnerDeadwoodScore, loserDeadwoodScore);
-
+            // 🔹 ENHANCED DEALS RUMMY LOGIC
+            HandleDealsRummyEnd(winnerDeadwoodScore, loserDeadwoodScore);
         }
         else if (gameManager.tableData.gameMode.Contains("Pool"))
         {
-            //// Pool Rummy: Winner gets total pool if match is over
-            //if (CheckIfMatchIsOver())
-            //{
-            //    winningAmount = gameManager.GetPoolWinningAmount();
-            //}
-
-            RummyGameResults(winnerDeadwoodScore, loserDeadwoodScore);
+            // 🔹 ENHANCED POOL RUMMY LOGIC
+            HandlePoolRummyEnd(winnerDeadwoodScore, loserDeadwoodScore);
         }
 
 
@@ -273,5 +254,88 @@ public class RoundEndScreen : IHUD
     void RefreshScore()
     {
         winner.playerScore.text = winner.player.GetScore().ToString();
+    }
+    
+    // 🔹 NEW ENHANCED GAME MODE HANDLERS
+    
+    private void HandleDealsRummyEnd(int winnerDeadwoodScore, int loserDeadwoodScore)
+    {
+        // Update cumulative scores for all players
+        winner.player.AddToCumulativeScore(winnerDeadwoodScore);
+        loser.player.AddToCumulativeScore(loserDeadwoodScore);
+        
+        // Complete the deal in DealsRummyManager
+        gameManager.CompleteDeal(winner.player);
+        
+        // Check if this was the last deal
+        if (gameManager.GetCurrentDealNumber() >= gameManager.GetTotalDeals())
+        {
+            // Final deal completed - show final results
+            int winningAmount = gameManager.GetDealsWinningAmount();
+            int platformFee = gameManager.GetPlatformFee(winningAmount);
+            winningAmount -= platformFee;
+            winningAmount = Mathf.Max(Constants.MINIMUM_WIN_AMOUNT, winningAmount);
+            
+            winner.player.AddScore(winningAmount);
+            FullscreenTextMessage.instance.ShowText($"{winner.player.userData.username} Wins Final Deal!\n₹{winningAmount}", 5f);
+            
+            RummyGameResults(winnerDeadwoodScore, loserDeadwoodScore);
+            Screen.orientation = ScreenOrientation.Portrait;
+            SceneManager.LoadScene((int)Scenes.MainMenu);
+        }
+        else
+        {
+            // More deals to play - show round results and continue
+            FullscreenTextMessage.instance.ShowText($"Deal {gameManager.GetCurrentDealNumber()} Won by {winner.player.userData.username}", 3f);
+            
+            // The DealsRummyManager will handle starting the next deal
+            RummyGameResults(winnerDeadwoodScore, loserDeadwoodScore);
+        }
+    }
+    
+    private void HandlePoolRummyEnd(int winnerDeadwoodScore, int loserDeadwoodScore)
+    {
+        // Add scores to cumulative totals
+        winner.player.AddToCumulativeScore(winnerDeadwoodScore);
+        loser.player.AddToCumulativeScore(loserDeadwoodScore);
+        
+        // Check for eliminations
+        winner.player.CheckForElimination();
+        loser.player.CheckForElimination();
+        
+        // Check if only one player remains (game should end)
+        if (gameManager.CheckIfOnlyOnePlayerRemains())
+        {
+            // Pool game over - determine winner and award pool
+            List<Player> activePlayers = gameManager.GetActivePlayers();
+            Player poolWinner = activePlayers.Count > 0 ? activePlayers[0] : null;
+            if (poolWinner != null)
+            {
+                int winningAmount = gameManager.GetPoolWinningAmount();
+                poolWinner.AddScore(winningAmount);
+                FullscreenTextMessage.instance.ShowText($"{poolWinner.userData.username} Wins Pool!\n₹{winningAmount}", 5f);
+            }
+            
+            RummyGameResults(winnerDeadwoodScore, loserDeadwoodScore);
+            Screen.orientation = ScreenOrientation.Portrait;
+            SceneManager.LoadScene((int)Scenes.MainMenu);
+        }
+        else
+        {
+            // Pool continues - show round results
+            string eliminationInfo = "";
+            if (winner.player.isEliminated)
+                eliminationInfo += $"{winner.player.userData.username} ELIMINATED! ";
+            if (loser.player.isEliminated)
+                eliminationInfo += $"{loser.player.userData.username} ELIMINATED! ";
+            
+            if (!string.IsNullOrEmpty(eliminationInfo))
+            {
+                FullscreenTextMessage.instance.ShowText(eliminationInfo, Constants.ELIMINATION_NOTIFICATION_TIME);
+            }
+            
+            FullscreenTextMessage.instance.ShowText($"Round Won by {winner.player.userData.username}", 3f);
+            RummyGameResults(winnerDeadwoodScore, loserDeadwoodScore);
+        }
     }
 }

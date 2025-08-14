@@ -29,6 +29,9 @@ public class GameManager : MonoBehaviour
             gameStateUpdated.Invoke();
             Debug.LogError("Updated GamePhase : " + value.ToString());
             SwitchStacksState();
+            
+            // 🔹 Update enhanced UI on phase change
+            UpdateEnhancedUIOnPhaseChange();
         }
     }
 
@@ -72,6 +75,20 @@ public class GameManager : MonoBehaviour
     private float opponentFinishSwapTime;
     private float playerFinishSwapTime;
     private List<int> deadwoodValues = new List<int>();
+    
+    // 🔹 NEW ENHANCED GAME MANAGEMENT PROPERTIES
+    [Header("Enhanced Game Management")]
+    public DropButton dropButton;
+    public GameModeIndicator gameModeIndicator;
+    private DealsRummyManager dealsRummyManager;
+    
+    // Pool Rummy Management
+    private List<Player> eliminatedPlayers = new List<Player>();
+    private bool poolGameEnded = false;
+    
+    // Deals Rummy Management
+    private int totalDeals = 2;
+    private int currentDealNumber = 1;
 
     public void RegisterResettable(IResettable resettable)
     {
@@ -111,6 +128,15 @@ public class GameManager : MonoBehaviour
         this.bid = bid;
         this.gameData = gameData;
         InitPlayers();
+        
+        // 🔹 Initialize enhanced functionality
+        InitializeEnhancedUI();
+        
+        // Initialize game mode specific features
+        if (gameMode == GameMode.Deals)
+        {
+            InitializeDealsRummy(2); // Default 2 deals, can be configured
+        }
 
 
 
@@ -129,6 +155,15 @@ public class GameManager : MonoBehaviour
         RummySocketServer.Instance.OnGameFinished.AddListener(GameFinished);
         RummySocketServer.Instance.OnGameEnded.AddListener(GameEndged);
         RummySocketServer.Instance.OnResetGame.AddListener(ResetGame);
+        
+        // 🔹 ENHANCED GAME EVENT LISTENERS
+        RummySocketServer.Instance.OnPlayerDropped.AddListener(OnPlayerDroppedFromServer);
+        RummySocketServer.Instance.OnPlayerEliminated.AddListener(OnPlayerEliminatedFromServer);
+        RummySocketServer.Instance.OnDealCompleted.AddListener(OnDealCompletedFromServer);
+        RummySocketServer.Instance.OnDealStarted.AddListener(OnDealStartedFromServer);
+        RummySocketServer.Instance.OnPoolGameEnded.AddListener(OnPoolGameEndedFromServer);
+        RummySocketServer.Instance.OnCumulativeScoreUpdated.AddListener(OnCumulativeScoreUpdatedFromServer);
+        RummySocketServer.Instance.OnActivePlayersUpdated.AddListener(OnActivePlayersUpdatedFromServer);
 
 
 
@@ -384,6 +419,9 @@ public class GameManager : MonoBehaviour
         AssignNewPlayer();
         RecreatePhasesQueue();
         StartNextPhase();
+        
+        // 🔹 Update enhanced UI on turn change
+        UpdateEnhancedUIOnTurnChange();
         // TakeOrPassGamePhase();
     }
     public void CardFetched(FetchedCardData cardData)
@@ -1191,21 +1229,557 @@ public class GameManager : MonoBehaviour
     {
         switch (gamePhase)
         {
-            case GamePhase.PassTakeDiscard:
-                discardPile.Shake();
-                break;
             case GamePhase.TakeStockPile:
                 deck.Shake();
                 break;
-            case GamePhase.TakeCard:
+            case GamePhase.PassTakeDiscard:
                 discardPile.Shake();
-                deck.Shake();
-                break;
-            case GamePhase.Discard:
-                discardPile.Shake();
-                break;
-            default:
                 break;
         }
     }
+    
+    // 🔹 NEW ENHANCED GAME FUNCTIONALITY
+    
+    #region Drop Functionality
+    public void OnPlayerDropped(Player player)
+    {
+        if (player == null) return;
+        
+        Debug.Log($"GameManager: Player {player.name} has dropped from the game");
+        
+        // Update player UI to show dropped state
+        player.playerUI?.SetDroppedState(true);
+        
+        // 🔹 SEND ACTIVE PLAYERS UPDATE TO SERVER
+        SendActivePlayersUpdate();
+        
+        // In Pool Rummy, check if only one player remains
+        if (gameMode == GameMode.Pool)
+        {
+            CheckPoolGameEnd();
+        }
+        
+        // Continue to next player if current player dropped
+        if (currentPlayer == player)
+        {
+            StartNextPhase();
+        }
+        
+        // Update UI
+        dropButton?.UpdateDropButtonVisibility();
+        gameModeIndicator?.OnGameStateChanged();
+    }
+    
+    private void CheckPoolGameEnd()
+    {
+        if (poolGameEnded) return;
+        
+        List<Player> activePlayers = GetActivePlayers();
+        
+        if (activePlayers.Count <= 1)
+        {
+            poolGameEnded = true;
+            Player winner = activePlayers.Count == 1 ? activePlayers[0] : null;
+            EndPoolGame(winner);
+        }
+    }
+    
+    private void EndPoolGame(Player winner)
+    {
+        Debug.Log($"Pool game ended. Winner: {winner?.name ?? "No winner"}");
+        
+        // 🔹 SEND POOL GAME ENDED EVENT TO SERVER
+        SendPoolGameEndedEvent(winner);
+        
+        if (winner != null)
+        {
+            int winningAmount = GetPoolWinningAmount();
+            FullscreenTextMessage.instance.ShowText($"{winner.name} Wins Pool!\n₹{winningAmount}", 5f);
+            winner.AddScore(winningAmount);
+        }
+        
+        gamePhase = GamePhase.GameEnded;
+        ShowEndRoundScreenEndRoundScreen();
+    }
+    
+    public List<Player> GetActivePlayers()
+    {
+        return playerList.Where(p => !p.hasDropped && !p.isEliminated).ToList();
+    }
+    #endregion
+    
+    #region Elimination System
+    public void OnPlayerEliminated(Player player)
+    {
+        if (player == null || eliminatedPlayers.Contains(player)) return;
+        
+        eliminatedPlayers.Add(player);
+        Debug.Log($"Player {player.name} has been eliminated!");
+        
+        // Update player UI
+        player.playerUI?.SetEliminatedState(true);
+        
+        // Show elimination notification
+        FullscreenTextMessage.instance.ShowText($"{player.name} Eliminated!", 3f);
+        
+        // Check if game should end
+        if (gameMode == GameMode.Pool)
+        {
+            CheckPoolGameEnd();
+        }
+        
+        // Update UI
+        gameModeIndicator?.OnPlayerEliminated();
+    }
+    
+    public int GetEliminationThreshold()
+    {
+        if (tableData?.gameType == "Pool101")
+            return Constants.POOL_101_ELIMINATION_SCORE;
+        else if (tableData?.gameType == "Pool201")
+            return Constants.POOL_201_ELIMINATION_SCORE;
+        
+        return Constants.POOL_101_ELIMINATION_SCORE; // Default
+    }
+    
+    public int GetActivePlayersCount()
+    {
+        return GetActivePlayers().Count;
+    }
+    #endregion
+    
+    #region Deals Rummy Management
+    public void InitializeDealsRummy(int numberOfDeals)
+    {
+        totalDeals = numberOfDeals;
+        currentDealNumber = 1;
+        
+        if (dealsRummyManager == null)
+            dealsRummyManager = FindObjectOfType<DealsRummyManager>();
+        
+        dealsRummyManager?.InitializeDealsRummy(numberOfDeals);
+    }
+    
+    public void StartNewDeal()
+    {
+        currentDealNumber++;
+        
+        // 🔹 SEND DEAL STARTED EVENT TO SERVER
+        SendDealStartedEvent();
+        
+        // Reset game state for new deal
+        ResetGame();
+        
+        // Start new round
+        StartGame();
+    }
+    
+    public void CompleteDeal(Player winner)
+    {
+        if (gameMode == GameMode.Deals && dealsRummyManager != null)
+        {
+            // 🔹 SEND DEAL COMPLETED EVENT TO SERVER
+            SendDealCompletedEvent(winner);
+            
+            dealsRummyManager.CompleteDeal(winner, playerList);
+        }
+    }
+    
+    public int GetTotalDeals()
+    {
+        if (dealsRummyManager != null)
+            return dealsRummyManager.GetTotalDeals();
+        return totalDeals;
+    }
+    
+    public int GetCurrentDealNumber()
+    {
+        if (dealsRummyManager != null)
+            return dealsRummyManager.GetCurrentDealNumber();
+        return currentDealNumber;
+    }
+    #endregion
+    
+    #region Game Mode Specific Win Conditions
+    public bool CheckGameModeSpecificWinConditions()
+    {
+        switch (gameMode)
+        {
+            case GameMode.Points:
+                return CheckPointsRummyWin();
+            case GameMode.Pool:
+                return CheckPoolRummyWin();
+            case GameMode.Deals:
+                return CheckDealsRummyWin();
+            default:
+                return false;
+        }
+    }
+    
+    private bool CheckPointsRummyWin()
+    {
+        // Points Rummy ends after each round
+        return true;
+    }
+    
+    private bool CheckPoolRummyWin()
+    {
+        // Pool Rummy continues until only one player remains
+        return GetActivePlayersCount() <= 1;
+    }
+    
+    private bool CheckDealsRummyWin()
+    {
+        // Deals Rummy continues until all deals are completed
+        return dealsRummyManager?.IsLastDeal() ?? false;
+    }
+    #endregion
+    
+    #region Enhanced UI Integration
+    private void InitializeEnhancedUI()
+    {
+        // Find UI components if not assigned
+        if (dropButton == null)
+            dropButton = FindObjectOfType<DropButton>();
+        
+        if (gameModeIndicator == null)
+            gameModeIndicator = FindObjectOfType<GameModeIndicator>();
+        
+        if (dealsRummyManager == null)
+            dealsRummyManager = FindObjectOfType<DealsRummyManager>();
+        
+        // Setup player event handlers
+        foreach (Player player in playerList)
+        {
+            player.OnPlayerDropped += OnPlayerDropped;
+            player.OnPlayerEliminated += OnPlayerEliminated;
+            
+            // Update player UI for current game mode
+            player.playerUI?.UpdateGameModeSpecificUI(gameMode);
+        }
+        
+        // Update UI components
+        dropButton?.UpdateDropButtonVisibility();
+        gameModeIndicator?.UpdateGameModeDisplay();
+    }
+    
+    public void UpdateEnhancedUIOnPhaseChange()
+    {
+        dropButton?.OnGamePhaseChanged();
+        gameModeIndicator?.OnGameStateChanged();
+    }
+    
+    public void UpdateEnhancedUIOnTurnChange()
+    {
+        dropButton?.OnTurnChanged();
+    }
+    #endregion
+    
+    // 🔹 NEW SERVER COMMUNICATION METHODS
+    
+    #region Enhanced Server Communication
+    public async void SendDealCompletedEvent(Player winner)
+    {
+        try
+        {
+            if (gameMode != GameMode.Deals) return;
+            
+            var dealData = new DealCompletedData
+            {
+                winnerId = winner.playerId,
+                winnerName = winner.name,
+                dealNumber = GetCurrentDealNumber(),
+                totalDeals = GetTotalDeals(),
+                playerScores = GetPlayerScoresDictionary(),
+                cumulativeScores = GetCumulativeScoresDictionary(),
+                dealsWon = GetDealsWonDictionary(),
+                matchId = SecurePlayerPrefs.GetString(Appinop.Constants.KMatchId),
+                isFinalDeal = GetCurrentDealNumber() >= GetTotalDeals()
+            };
+            
+            await RummySocketServer.Instance.SendEnhancedEvent(RummySocketEvents.deal_completed, dealData);
+            Debug.Log($"Sent deal_completed event for deal {dealData.dealNumber}");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Failed to send deal_completed event: {e.Message}");
+        }
+    }
+    
+    public async void SendDealStartedEvent()
+    {
+        try
+        {
+            if (gameMode != GameMode.Deals) return;
+            
+            var dealStartData = new DealStartedData
+            {
+                dealNumber = GetCurrentDealNumber(),
+                totalDeals = GetTotalDeals(),
+                matchId = SecurePlayerPrefs.GetString(Appinop.Constants.KMatchId),
+                activePlayers = GetActivePlayers().Select(p => p.playerId).ToList(),
+                cumulativeScores = GetCumulativeScoresDictionary()
+            };
+            
+            await RummySocketServer.Instance.SendEnhancedEvent(RummySocketEvents.deal_started, dealStartData);
+            Debug.Log($"Sent deal_started event for deal {dealStartData.dealNumber}");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Failed to send deal_started event: {e.Message}");
+        }
+    }
+    
+    public async void SendPoolGameEndedEvent(Player winner)
+    {
+        try
+        {
+            if (gameMode != GameMode.Pool) return;
+            
+            var poolEndData = new PoolGameEndedData
+            {
+                winnerId = winner?.playerId ?? "",
+                winnerName = winner?.name ?? "No Winner",
+                winningAmount = GetPoolWinningAmount(),
+                poolType = tableData?.gameType ?? "Pool101",
+                finalScores = GetCumulativeScoresDictionary(),
+                eliminatedPlayers = eliminatedPlayers.Select(p => p.playerId).ToList(),
+                matchId = SecurePlayerPrefs.GetString(Appinop.Constants.KMatchId)
+            };
+            
+            await RummySocketServer.Instance.SendEnhancedEvent(RummySocketEvents.pool_game_ended, poolEndData);
+            Debug.Log($"Sent pool_game_ended event. Winner: {winner?.name}");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Failed to send pool_game_ended event: {e.Message}");
+        }
+    }
+    
+    public async void SendActivePlayersUpdate()
+    {
+        try
+        {
+            var activePlayersData = new ActivePlayersData
+            {
+                activePlayers = GetActivePlayers().Select(p => p.playerId).ToList(),
+                droppedPlayers = playerList.Where(p => p.hasDropped).Select(p => p.playerId).ToList(),
+                eliminatedPlayers = eliminatedPlayers.Select(p => p.playerId).ToList(),
+                activeCount = GetActivePlayersCount(),
+                gameMode = gameMode.ToString(),
+                matchId = SecurePlayerPrefs.GetString(Appinop.Constants.KMatchId)
+            };
+            
+            await RummySocketServer.Instance.SendEnhancedEvent(RummySocketEvents.active_players_updated, activePlayersData);
+            Debug.Log($"Sent active_players_updated event. Active: {activePlayersData.activeCount}");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Failed to send active_players_updated event: {e.Message}");
+        }
+    }
+    
+    // Helper methods for data collection
+    private Dictionary<string, int> GetPlayerScoresDictionary()
+    {
+        var scores = new Dictionary<string, int>();
+        foreach (Player player in playerList)
+        {
+            scores[player.playerId] = player.GetFinalScore();
+        }
+        return scores;
+    }
+    
+    private Dictionary<string, int> GetCumulativeScoresDictionary()
+    {
+        var scores = new Dictionary<string, int>();
+        foreach (Player player in playerList)
+        {
+            scores[player.playerId] = player.cumulativeScore;
+        }
+        return scores;
+    }
+    
+    private Dictionary<string, int> GetDealsWonDictionary()
+    {
+        var dealsWon = new Dictionary<string, int>();
+        foreach (Player player in playerList)
+        {
+            dealsWon[player.playerId] = player.dealsWon;
+        }
+        return dealsWon;
+    }
+    #endregion
+    
+    // 🔹 SERVER EVENT HANDLERS
+    
+    #region Server Event Handlers
+    public void OnPlayerDroppedFromServer(PlayerDroppedData data)
+    {
+        Debug.Log($"Received player_dropped from server: {data.playerName}");
+        
+        Player player = playerList.Find(p => p.playerId == data.playerId);
+        if (player != null && !player.hasDropped)
+        {
+            // Sync local state with server
+            player.hasDropped = true;
+            player.cumulativeScore = data.cumulativeScore;
+            
+            // Update UI
+            player.playerUI?.SetDroppedState(true);
+            player.playerUI?.UpdateCumulativeScore(data.cumulativeScore);
+            
+            gameModeIndicator?.OnGameStateChanged();
+        }
+    }
+    
+    public void OnPlayerEliminatedFromServer(PlayerEliminatedData data)
+    {
+        Debug.Log($"Received player_eliminated from server: {data.playerName}");
+        
+        Player player = playerList.Find(p => p.playerId == data.playerId);
+        if (player != null && !player.isEliminated)
+        {
+            // Sync local state with server
+            player.isEliminated = true;
+            player.cumulativeScore = data.eliminationScore;
+            
+            // Update UI
+            player.playerUI?.SetEliminatedState(true);
+            player.playerUI?.UpdateCumulativeScore(data.eliminationScore);
+            
+            // Show notification
+            FullscreenTextMessage.instance.ShowText($"{data.playerName} Eliminated!", Constants.ELIMINATION_NOTIFICATION_TIME);
+            
+            gameModeIndicator?.OnPlayerEliminated();
+        }
+    }
+    
+    public void OnDealCompletedFromServer(DealCompletedData data)
+    {
+        Debug.Log($"Received deal_completed from server: Deal {data.dealNumber} won by {data.winnerName}");
+        
+        // Sync deal state
+        currentDealNumber = data.dealNumber;
+        
+        // Update player scores and deals won
+        foreach (var scoreEntry in data.cumulativeScores)
+        {
+            Player player = playerList.Find(p => p.playerId == scoreEntry.Key);
+            if (player != null)
+            {
+                player.cumulativeScore = scoreEntry.Value;
+                player.playerUI?.UpdateCumulativeScore(scoreEntry.Value);
+            }
+        }
+        
+        foreach (var dealEntry in data.dealsWon)
+        {
+            Player player = playerList.Find(p => p.playerId == dealEntry.Key);
+            if (player != null)
+            {
+                player.dealsWon = dealEntry.Value;
+            }
+        }
+        
+        gameModeIndicator?.OnDealChanged();
+    }
+    
+    public void OnDealStartedFromServer(DealStartedData data)
+    {
+        Debug.Log($"Received deal_started from server: Starting deal {data.dealNumber}");
+        
+        // Sync deal state
+        currentDealNumber = data.dealNumber;
+        totalDeals = data.totalDeals;
+        
+        // Update cumulative scores
+        foreach (var scoreEntry in data.cumulativeScores)
+        {
+            Player player = playerList.Find(p => p.playerId == scoreEntry.Key);
+            if (player != null)
+            {
+                player.cumulativeScore = scoreEntry.Value;
+                player.playerUI?.UpdateCumulativeScore(scoreEntry.Value);
+            }
+        }
+        
+        gameModeIndicator?.OnDealChanged();
+    }
+    
+    public void OnPoolGameEndedFromServer(PoolGameEndedData data)
+    {
+        Debug.Log($"Received pool_game_ended from server: Winner {data.winnerName}");
+        
+        // Sync final scores
+        foreach (var scoreEntry in data.finalScores)
+        {
+            Player player = playerList.Find(p => p.playerId == scoreEntry.Key);
+            if (player != null)
+            {
+                player.cumulativeScore = scoreEntry.Value;
+                player.playerUI?.UpdateCumulativeScore(scoreEntry.Value);
+            }
+        }
+        
+        // Find winner and update
+        Player winner = playerList.Find(p => p.playerId == data.winnerId);
+        if (winner != null)
+        {
+            winner.AddScore(data.winningAmount);
+            FullscreenTextMessage.instance.ShowText($"{data.winnerName} Wins Pool!\n₹{data.winningAmount}", 5f);
+        }
+        
+        // End game
+        gamePhase = GamePhase.GameEnded;
+        ShowEndRoundScreenEndRoundScreen();
+    }
+    
+    public void OnCumulativeScoreUpdatedFromServer(CumulativeScoreData data)
+    {
+        Debug.Log($"Received cumulative_score_updated from server: {data.playerId} scored {data.scoreThisRound}");
+        
+        Player player = playerList.Find(p => p.playerId == data.playerId);
+        if (player != null)
+        {
+            player.cumulativeScore = data.cumulativeScore;
+            player.isEliminated = data.isEliminated;
+            
+            player.playerUI?.UpdateCumulativeScore(data.cumulativeScore);
+            if (data.isEliminated)
+            {
+                player.playerUI?.SetEliminatedState(true);
+            }
+        }
+    }
+    
+    public void OnActivePlayersUpdatedFromServer(ActivePlayersData data)
+    {
+        Debug.Log($"Received active_players_updated from server: {data.activeCount} active players");
+        
+        // Sync dropped and eliminated states
+        foreach (string droppedPlayerId in data.droppedPlayers)
+        {
+            Player player = playerList.Find(p => p.playerId == droppedPlayerId);
+            if (player != null && !player.hasDropped)
+            {
+                player.hasDropped = true;
+                player.playerUI?.SetDroppedState(true);
+            }
+        }
+        
+        foreach (string eliminatedPlayerId in data.eliminatedPlayers)
+        {
+            Player player = playerList.Find(p => p.playerId == eliminatedPlayerId);
+            if (player != null && !player.isEliminated)
+            {
+                player.isEliminated = true;
+                player.playerUI?.SetEliminatedState(true);
+            }
+        }
+        
+        gameModeIndicator?.OnGameStateChanged();
+        dropButton?.UpdateDropButtonVisibility();
+    }
+    #endregion
 }

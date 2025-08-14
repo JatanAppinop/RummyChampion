@@ -17,6 +17,15 @@ public class Player
 
     public UserData userData;
     private int totalWinnings = 0; // New variable to store total winnings
+    
+    // 🔹 NEW DROP AND GAME STATE PROPERTIES
+    [field: SerializeField] public bool hasDropped { get; private set; } = false;
+    [field: SerializeField] public bool isEliminated { get; private set; } = false;
+    [field: SerializeField] public int cumulativeScore { get; private set; } = 0;
+    [field: SerializeField] public int dealsWon { get; private set; } = 0;
+    [field: SerializeField] public bool hasPickedCardThisTurn { get; private set; } = false;
+    public Action<Player> OnPlayerDropped;
+    public Action<Player> OnPlayerEliminated;
 
     [field: SerializeField] private string _name;
 
@@ -283,6 +292,9 @@ public class Player
         if (gameManager.IsThisGamePlayer(this) && !lastCardIsTakenFromDeck)
             cardOnAction.DisableColorCard();
 
+        // 🔹 Mark that player has picked a card this turn (for drop penalty calculation)
+        MarkCardPickedThisTurn();
+
         cardOnAction.RegisterAction(FinishMove);
 
 
@@ -291,6 +303,175 @@ public class Player
     }
 
     #endregion
+
+    // 🔹 NEW DROP FUNCTIONALITY
+    public void DropFromGame(bool hasPickedCard = false)
+    {
+        if (hasDropped)
+        {
+            Debug.LogWarning($"Player {name} has already dropped!");
+            return;
+        }
+
+        hasDropped = true;
+        
+        // Apply drop penalty based on whether player has picked a card
+        int dropPenalty = hasPickedCard || hasPickedCardThisTurn ? Constants.MID_DROP_PENALTY : Constants.FULL_DROP_PENALTY;
+        AddToCumulativeScore(dropPenalty);
+        
+        Debug.Log($"Player {name} dropped with {dropPenalty} penalty points");
+        
+        // 🔹 SEND DROP EVENT TO SERVER
+        SendPlayerDroppedEvent(dropPenalty, hasPickedCard || hasPickedCardThisTurn);
+        
+        // Notify game manager about the drop
+        OnPlayerDropped?.Invoke(this);
+        
+        // Stop player's timer if it's their turn
+        if (gameManager.IsThisPlayerTurn(this))
+        {
+            StopTimer();
+        }
+    }
+
+    public void AddToCumulativeScore(int points)
+    {
+        cumulativeScore += points;
+        
+        // 🔹 SEND SCORE UPDATE TO SERVER
+        SendCumulativeScoreUpdate(points);
+        
+        // Check for elimination in Pool Rummy
+        if (gameManager.gameMode == GameMode.Pool)
+        {
+            CheckForElimination();
+        }
+        
+        playerUI.UpdateCumulativeScore(cumulativeScore);
+    }
+
+    public void CheckForElimination()
+    {
+        if (isEliminated) return;
+        
+        int eliminationThreshold = gameManager.GetEliminationThreshold();
+        if (cumulativeScore >= eliminationThreshold)
+        {
+            isEliminated = true;
+            Debug.Log($"Player {name} eliminated with {cumulativeScore} points");
+            
+            // 🔹 SEND ELIMINATION EVENT TO SERVER
+            SendPlayerEliminatedEvent();
+            
+            OnPlayerEliminated?.Invoke(this);
+        }
+    }
+
+    public void IncrementDealsWon()
+    {
+        dealsWon++;
+    }
+
+    public void ResetForNewDeal()
+    {
+        hasPickedCardThisTurn = false;
+        // Don't reset hasDropped or isEliminated - these persist across deals
+    }
+
+    public void MarkCardPickedThisTurn()
+    {
+        hasPickedCardThisTurn = true;
+    }
+
+    public bool CanDrop()
+    {
+        return !hasDropped && !isEliminated && gameManager.gameMode == GameMode.Pool;
+    }
+
+    public int GetFinalScore()
+    {
+        if (hasDropped)
+        {
+            // Return the drop penalty as final score
+            return hasPickedCardThisTurn ? Constants.MID_DROP_PENALTY : Constants.FULL_DROP_PENALTY;
+        }
+        
+        // Calculate deadwood score from hand
+        return myHand != null ? myHand.GetDeadwoodScore() : 0;
+    }
+    
+    // 🔹 NEW SERVER COMMUNICATION METHODS
+    
+    private async void SendPlayerDroppedEvent(int penaltyPoints, bool hasPickedCard)
+    {
+        try
+        {
+            var dropData = new PlayerDroppedData
+            {
+                playerId = this.playerId,
+                playerName = this.name,
+                penaltyPoints = penaltyPoints,
+                hasPickedCard = hasPickedCard,
+                cumulativeScore = this.cumulativeScore,
+                gameMode = gameManager.gameMode.ToString(),
+                matchId = SecurePlayerPrefs.GetString(Appinop.Constants.KMatchId)
+            };
+            
+            await RummySocketServer.Instance.SendEnhancedEvent(RummySocketEvents.player_dropped, dropData);
+            Debug.Log($"Sent player_dropped event for {name}");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Failed to send player_dropped event: {e.Message}");
+        }
+    }
+    
+    private async void SendPlayerEliminatedEvent()
+    {
+        try
+        {
+            var eliminationData = new PlayerEliminatedData
+            {
+                playerId = this.playerId,
+                playerName = this.name,
+                eliminationScore = this.cumulativeScore,
+                threshold = gameManager.GetEliminationThreshold(),
+                gameMode = gameManager.gameMode.ToString(),
+                matchId = SecurePlayerPrefs.GetString(Appinop.Constants.KMatchId),
+                remainingPlayers = gameManager.GetActivePlayersCount()
+            };
+            
+            await RummySocketServer.Instance.SendEnhancedEvent(RummySocketEvents.player_eliminated, eliminationData);
+            Debug.Log($"Sent player_eliminated event for {name}");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Failed to send player_eliminated event: {e.Message}");
+        }
+    }
+    
+    private async void SendCumulativeScoreUpdate(int scoreThisRound)
+    {
+        try
+        {
+            var scoreData = new CumulativeScoreData
+            {
+                playerId = this.playerId,
+                scoreThisRound = scoreThisRound,
+                cumulativeScore = this.cumulativeScore,
+                isEliminated = this.isEliminated,
+                gameMode = gameManager.gameMode.ToString(),
+                matchId = SecurePlayerPrefs.GetString(Appinop.Constants.KMatchId)
+            };
+            
+            await RummySocketServer.Instance.SendEnhancedEvent(RummySocketEvents.cumulative_score_updated, scoreData);
+            Debug.Log($"Sent cumulative_score_updated event for {name}");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Failed to send cumulative_score_updated event: {e.Message}");
+        }
+    }
 
     protected virtual ITakeCard GetPile()
     {
@@ -466,6 +647,15 @@ public class Player
 
     public virtual void ResetState()
     {
-
+        inAction = false;
+        cardOnAction = null;
+        zoomedCard = null;
+        lastCardIsTakenFromDeck = false;
+        gameFinished = false;
+        
+        // 🔹 Reset new drop/game state properties for new round
+        hasDropped = false;
+        hasPickedCardThisTurn = false;
+        // Note: Don't reset isEliminated, cumulativeScore, or dealsWon as these persist across rounds
     }
 }

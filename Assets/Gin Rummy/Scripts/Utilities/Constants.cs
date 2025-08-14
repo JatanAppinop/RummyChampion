@@ -60,8 +60,29 @@ public class Constants
     public const int MID_DROP_PENALTY = 40; // Player drops after picking a card
      // 🔹 Default Values for Winnings Calculation
     public const int MINIMUM_WIN_AMOUNT = 0; // Ensures winnings never go negative
+    
+    // 🔹 NEW ENHANCED GAME CONSTANTS
+    // Deals Rummy
+    public const int DEFAULT_DEALS_COUNT = 2; // Default number of deals in Deals Rummy
+    public const int MAX_DEALS_COUNT = 6; // Maximum number of deals allowed
+    
+    // Points Rummy
+    public const int DEFAULT_POINTS_TARGET = 80; // Default target points for Points Rummy
+    
+    // UI Display Times
+    public const float ELIMINATION_NOTIFICATION_TIME = 3f; // Time to show elimination notification
+    public const float DROP_NOTIFICATION_TIME = 2f; // Time to show drop notification
+    public const float GAME_MODE_DISPLAY_TIME = 5f; // Time to show game mode information
+    
+    // Pool Rummy Additional
+    public const int POOL_WINNER_BONUS = 0; // Bonus points for pool winner (if any)
+    public const float POOL_END_DELAY = 2f; // Delay before ending pool game
+    
+    // Game State
+    public const int MAX_RECONNECTION_ATTEMPTS = 3; // Maximum reconnection attempts
+    public const float TURN_TIMEOUT_WARNING = 5f; // Warning time before turn timeout
 
-    public static readonly WaitForSeconds delayBetweenRoundEndCardAnims = new WaitForSeconds(0.1f);
+	public static readonly WaitForSeconds delayBetweenRoundEndCardAnims = new WaitForSeconds(0.1f);
 	public static readonly WaitForSeconds delayBetweenDeadwoodCardAnim = new WaitForSeconds(0.5f);
 	public static readonly WaitForSeconds delayAfterLayoutCardAnim = new WaitForSeconds(1.5f);
 

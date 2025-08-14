@@ -40,7 +40,17 @@ public enum RummySocketEvents
     match_cancelled,
     pick_card,
     update_player_hand,
-    reshuffle
+    reshuffle,
+    
+    // 🔹 NEW ENHANCED GAME EVENTS
+    player_dropped,              // Player drops from Pool Rummy
+    player_eliminated,           // Player eliminated from Pool Rummy
+    deal_completed,              // Deal completed in Deals Rummy
+    deal_started,                // New deal started
+    pool_game_ended,             // Pool game ended with winner
+    cumulative_score_updated,    // Score update for tracking
+    game_mode_changed,           // Game mode state change
+    active_players_updated       // Active player count updated
 }
 
 public class RummySocketServer : SingletonWithGameobject<RummySocketServer>
@@ -63,6 +73,16 @@ public class RummySocketServer : SingletonWithGameobject<RummySocketServer>
     public UnityEvent<PileShuffled> OnShufflePile = new UnityEvent<PileShuffled>();
     public UnityEvent<Dictionary<string, string>> OnGameFinished = new UnityEvent<Dictionary<string, string>>();
     public UnityEvent<string> OnError = new UnityEvent<string>();
+    
+    // 🔹 NEW ENHANCED GAME EVENTS
+    public UnityEvent<PlayerDroppedData> OnPlayerDropped = new UnityEvent<PlayerDroppedData>();
+    public UnityEvent<PlayerEliminatedData> OnPlayerEliminated = new UnityEvent<PlayerEliminatedData>();
+    public UnityEvent<DealCompletedData> OnDealCompleted = new UnityEvent<DealCompletedData>();
+    public UnityEvent<DealStartedData> OnDealStarted = new UnityEvent<DealStartedData>();
+    public UnityEvent<PoolGameEndedData> OnPoolGameEnded = new UnityEvent<PoolGameEndedData>();
+    public UnityEvent<CumulativeScoreData> OnCumulativeScoreUpdated = new UnityEvent<CumulativeScoreData>();
+    public UnityEvent<GameModeChangedData> OnGameModeChanged = new UnityEvent<GameModeChangedData>();
+    public UnityEvent<ActivePlayersData> OnActivePlayersUpdated = new UnityEvent<ActivePlayersData>();
 
     private SocketIOUnity socket;
     [SerializeField] private string serverUrlLink;
@@ -260,28 +280,16 @@ public class RummySocketServer : SingletonWithGameobject<RummySocketServer>
         socket.OnUnityThread(Enum.GetName(typeof(RummySocketEvents), RummySocketEvents.final_winner), response =>
       {
           Debug.Log($"[Socket] final_winner Received: error - <color=green>{response}</color>");
+          var responseParsed = response.GetValue<Dictionary<string, string>>();
 
-          try
+
+          if (responseParsed != null)
           {
-              // Extract JSON as an object (not an array)
-              var matchData = response.ToString();
-
-
-              if (matchData != null)
-              {
-                  // Serialize into JSON string for event handling
-                  string jsonResponse = JsonUtility.ToJson(matchData);
-                  OnFinalWinner?.Invoke(matchData);
-              }
-              else
-              {
-                  Debug.LogWarning("[Socket] final_winner: Match data is null.");
-              }
-
+              OnFinalWinner?.Invoke(responseParsed["winnerId"]);
           }
-          catch (Exception ex)
+          else
           {
-              Debug.LogError($"[Socket] Error processing final_winner event: {ex.Message}");
+              Debug.LogWarning("[Socket] final_winner: Match data is null.");
           }
       });
         socket.OnUnityThread(Enum.GetName(typeof(RummySocketEvents), RummySocketEvents.new_round), response =>
@@ -316,6 +324,105 @@ public class RummySocketServer : SingletonWithGameobject<RummySocketServer>
 
 
         await socket.ConnectAsync();
+        
+        // 🔹 NEW ENHANCED GAME EVENT HANDLERS
+        socket.OnUnityThread(Enum.GetName(typeof(RummySocketEvents), RummySocketEvents.player_dropped), response =>
+        {
+            try
+            {
+                Debug.Log($"[Socket] Received: player_dropped - <color=green>{response}</color>");
+                var responseParsed = response.GetValue<PlayerDroppedData>();
+                OnPlayerDropped?.Invoke(responseParsed);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[Socket] Error handling player_dropped: {e}");
+            }
+        });
+
+        socket.OnUnityThread(Enum.GetName(typeof(RummySocketEvents), RummySocketEvents.player_eliminated), response =>
+        {
+            try
+            {
+                Debug.Log($"[Socket] Received: player_eliminated - <color=green>{response}</color>");
+                var responseParsed = response.GetValue<PlayerEliminatedData>();
+                OnPlayerEliminated?.Invoke(responseParsed);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[Socket] Error handling player_eliminated: {e}");
+            }
+        });
+
+        socket.OnUnityThread(Enum.GetName(typeof(RummySocketEvents), RummySocketEvents.deal_completed), response =>
+        {
+            try
+            {
+                Debug.Log($"[Socket] Received: deal_completed - <color=green>{response}</color>");
+                var responseParsed = response.GetValue<DealCompletedData>();
+                OnDealCompleted?.Invoke(responseParsed);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[Socket] Error handling deal_completed: {e}");
+            }
+        });
+
+        socket.OnUnityThread(Enum.GetName(typeof(RummySocketEvents), RummySocketEvents.deal_started), response =>
+        {
+            try
+            {
+                Debug.Log($"[Socket] Received: deal_started - <color=green>{response}</color>");
+                var responseParsed = response.GetValue<DealStartedData>();
+                OnDealStarted?.Invoke(responseParsed);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[Socket] Error handling deal_started: {e}");
+            }
+        });
+
+        socket.OnUnityThread(Enum.GetName(typeof(RummySocketEvents), RummySocketEvents.pool_game_ended), response =>
+        {
+            try
+            {
+                Debug.Log($"[Socket] Received: pool_game_ended - <color=green>{response}</color>");
+                var responseParsed = response.GetValue<PoolGameEndedData>();
+                OnPoolGameEnded?.Invoke(responseParsed);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[Socket] Error handling pool_game_ended: {e}");
+            }
+        });
+
+        socket.OnUnityThread(Enum.GetName(typeof(RummySocketEvents), RummySocketEvents.cumulative_score_updated), response =>
+        {
+            try
+            {
+                Debug.Log($"[Socket] Received: cumulative_score_updated - <color=green>{response}</color>");
+                var responseParsed = response.GetValue<CumulativeScoreData>();
+                OnCumulativeScoreUpdated?.Invoke(responseParsed);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[Socket] Error handling cumulative_score_updated: {e}");
+            }
+        });
+
+        socket.OnUnityThread(Enum.GetName(typeof(RummySocketEvents), RummySocketEvents.active_players_updated), response =>
+        {
+            try
+            {
+                Debug.Log($"[Socket] Received: active_players_updated - <color=green>{response}</color>");
+                var responseParsed = response.GetValue<ActivePlayersData>();
+                OnActivePlayersUpdated?.Invoke(responseParsed);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[Socket] Error handling active_players_updated: {e}");
+            }
+        });
     }
     [System.Serializable]
     public class MatchWinnerData
@@ -347,6 +454,33 @@ public class RummySocketServer : SingletonWithGameobject<RummySocketServer>
         }
 
         await socket.EmitAsync(Enum.GetName(typeof(RummySocketEvents), eventName), data);
+    }
+    
+    // 🔹 NEW ENHANCED EVENT SENDING METHOD FOR COMPLEX DATA
+    public async Task SendEnhancedEvent<T>(RummySocketEvents eventName, T data) where T : class
+    {
+        try
+        {
+            Debug.Log($"Sending Enhanced Event: {eventName}");
+            
+            if (data != null)
+            {
+                string jsonData = JsonConvert.SerializeObject(data);
+                Debug.Log($"Event data: <color=green>{jsonData}</color>");
+            }
+            else
+            {
+                Debug.Log("Enhanced event data is null");
+            }
+
+            await socket.EmitAsync(Enum.GetName(typeof(RummySocketEvents), eventName), data);
+            Debug.Log($"Successfully sent enhanced event: {eventName}");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Failed to send enhanced event {eventName}: {e.Message}");
+            throw;
+        }
     }
 
     void OnDestroy()

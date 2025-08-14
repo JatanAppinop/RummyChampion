@@ -15,6 +15,13 @@ public class PlayerUI : MonoBehaviour
     private Slider pointsSlider;
     private Image UIPanel;
     private int score;
+    
+    // 🔹 NEW UI ELEMENTS FOR ENHANCED FUNCTIONALITY
+    [Header("Enhanced UI Elements")]
+    public Text cumulativeScoreText; // For Pool/Deals Rummy cumulative scoring
+    public Image droppedIndicator; // Visual indicator when player has dropped
+    public Image eliminatedIndicator; // Visual indicator when player is eliminated
+    public Text gameStateText; // Text to show player status (Active/Dropped/Eliminated)
 
     void Awake()
     {
@@ -93,5 +100,83 @@ public class PlayerUI : MonoBehaviour
     public bool TimeIsOver()
     {
         return timer.TimeIsOver();
+    }
+    
+    // 🔹 NEW METHODS FOR ENHANCED FUNCTIONALITY
+    public void UpdateCumulativeScore(int cumulativeScore)
+    {
+        if (cumulativeScoreText != null)
+        {
+            cumulativeScoreText.text = "Total: " + cumulativeScore;
+        }
+    }
+    
+    public void SetDroppedState(bool isDropped)
+    {
+        if (droppedIndicator != null)
+        {
+            droppedIndicator.gameObject.SetActive(isDropped);
+        }
+        
+        if (gameStateText != null)
+        {
+            gameStateText.text = isDropped ? "DROPPED" : "ACTIVE";
+            gameStateText.color = isDropped ? Color.red : Color.green;
+        }
+        
+        // Dim the UI panel if player has dropped
+        if (UIPanel != null)
+        {
+            Color panelColor = UIPanel.color;
+            panelColor.a = isDropped ? 0.5f : 1.0f;
+            UIPanel.color = panelColor;
+        }
+    }
+    
+    public void SetEliminatedState(bool isEliminated)
+    {
+        if (eliminatedIndicator != null)
+        {
+            eliminatedIndicator.gameObject.SetActive(isEliminated);
+        }
+        
+        if (gameStateText != null)
+        {
+            gameStateText.text = isEliminated ? "ELIMINATED" : "ACTIVE";
+            gameStateText.color = isEliminated ? Color.red : Color.green;
+        }
+        
+        // Dim the UI panel if player is eliminated
+        if (UIPanel != null)
+        {
+            Color panelColor = UIPanel.color;
+            panelColor.a = isEliminated ? 0.3f : 1.0f;
+            UIPanel.color = panelColor;
+        }
+    }
+    
+    public void UpdateGameModeSpecificUI(GameMode gameMode)
+    {
+        // Show/hide cumulative score based on game mode
+        if (cumulativeScoreText != null)
+        {
+            cumulativeScoreText.gameObject.SetActive(gameMode == GameMode.Pool || gameMode == GameMode.Deals);
+        }
+        
+        // Update score display based on game mode
+        RefreshScoreText();
+    }
+    
+    public void ResetEnhancedUI()
+    {
+        SetDroppedState(false);
+        SetEliminatedState(false);
+        UpdateCumulativeScore(0);
+        
+        if (gameStateText != null)
+        {
+            gameStateText.text = "ACTIVE";
+            gameStateText.color = Color.green;
+        }
     }
 }
