@@ -229,12 +229,15 @@ public class RummySocketServer : SingletonWithGameobject<RummySocketServer>
         {
             try
             {
-                Debug.Log($"[Socket] ✅ Received player_ready response from backend - <color=green>{response}</color>");
+                Debug.Log($"🔍 [FRONTEND RESPONSE DEBUG] ===== PLAYER_READY RESPONSE RECEIVED =====");
+                Debug.Log($"🔍 [FRONTEND RESPONSE DEBUG] Response received: <color=green>{response}</color>");
+                Debug.Log($"🔍 [FRONTEND RESPONSE DEBUG] Response type: {response?.GetType().Name}");
+                Debug.Log($"🔍 [FRONTEND RESPONSE DEBUG] Response is null: {response == null}");
                 
                 // Try multiple response formats to handle different backend responses
                 if (response == null)
                 {
-                    Debug.LogWarning("[Socket] player_ready response is null - this might be the issue!");
+                    Debug.LogError("❌ [FRONTEND RESPONSE DEBUG] player_ready response is null - backend not responding!");
                     return;
                 }
                 
@@ -529,24 +532,38 @@ public class RummySocketServer : SingletonWithGameobject<RummySocketServer>
     {
         try
         {
-            Debug.Log($"Sending Enhanced Event: {eventName}");
+            Debug.Log($"🔍 [SOCKET DEBUG] ===== SOCKET SEND ENHANCED EVENT =====");
+            Debug.Log($"🔍 [SOCKET DEBUG] Event Name: {eventName}");
+            Debug.Log($"🔍 [SOCKET DEBUG] Event Name String: {Enum.GetName(typeof(RummySocketEvents), eventName)}");
+            Debug.Log($"🔍 [SOCKET DEBUG] Data Type: {typeof(T).Name}");
+            Debug.Log($"🔍 [SOCKET DEBUG] Socket null check: {socket == null}");
+            Debug.Log($"🔍 [SOCKET DEBUG] Socket connected: {socket?.Connected}");
             
             if (data != null)
             {
                 string jsonData = JsonConvert.SerializeObject(data);
-                Debug.Log($"Event data: <color=green>{jsonData}</color>");
+                Debug.Log($"🔍 [SOCKET DEBUG] JSON Data: <color=green>{jsonData}</color>");
+                Debug.Log($"🔍 [SOCKET DEBUG] JSON Data Length: {jsonData.Length} characters");
             }
             else
             {
-                Debug.Log("Enhanced event data is null");
+                Debug.LogError("❌ [SOCKET DEBUG] Enhanced event data is null!");
+                return;
             }
 
+            Debug.Log($"🔍 [SOCKET DEBUG] About to call socket.EmitAsync...");
+            Debug.Log($"🔍 [SOCKET DEBUG] Socket namespace: {socket?.Options?.Path}");
+            Debug.Log($"🔍 [SOCKET DEBUG] Socket URI: {socket?.ServerUri}");
+            
             await socket.EmitAsync(Enum.GetName(typeof(RummySocketEvents), eventName), data);
-            Debug.Log($"Successfully sent enhanced event: {eventName}");
+            Debug.Log($"✅ [SOCKET DEBUG] socket.EmitAsync completed successfully for: {eventName}");
+            Debug.Log($"🔍 [SOCKET DEBUG] Now waiting for backend response...");
         }
         catch (Exception e)
         {
-            Debug.LogError($"Failed to send enhanced event {eventName}: {e.Message}");
+            Debug.LogError($"❌ [SOCKET DEBUG] Failed to send enhanced event {eventName}: {e.Message}");
+            Debug.LogError($"❌ [SOCKET DEBUG] Exception type: {e.GetType().Name}");
+            Debug.LogError($"❌ [SOCKET DEBUG] Stack trace: {e.StackTrace}");
             throw;
         }
     }
