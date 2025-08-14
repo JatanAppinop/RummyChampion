@@ -1622,8 +1622,8 @@ public class GameManager : MonoBehaviour
         if (player != null && !player.hasDropped)
         {
             // Sync local state with server
-            player.hasDropped = true;
-            player.cumulativeScore = data.cumulativeScore;
+            player.SetDroppedState(true);
+            player.SetCumulativeScore(data.cumulativeScore);
             
             // Update UI
             player.playerUI?.SetDroppedState(true);
@@ -1641,8 +1641,8 @@ public class GameManager : MonoBehaviour
         if (player != null && !player.isEliminated)
         {
             // Sync local state with server
-            player.isEliminated = true;
-            player.cumulativeScore = data.eliminationScore;
+            player.SetEliminatedState(true);
+            player.SetCumulativeScore(data.eliminationScore);
             
             // Update UI
             player.playerUI?.SetEliminatedState(true);
@@ -1668,7 +1668,7 @@ public class GameManager : MonoBehaviour
             Player player = playerList.Find(p => p.playerId == scoreEntry.Key);
             if (player != null)
             {
-                player.cumulativeScore = scoreEntry.Value;
+                player.SetCumulativeScore(scoreEntry.Value);
                 player.playerUI?.UpdateCumulativeScore(scoreEntry.Value);
             }
         }
@@ -1678,7 +1678,7 @@ public class GameManager : MonoBehaviour
             Player player = playerList.Find(p => p.playerId == dealEntry.Key);
             if (player != null)
             {
-                player.dealsWon = dealEntry.Value;
+                player.SetDealsWon(dealEntry.Value);
             }
         }
         
@@ -1699,7 +1699,7 @@ public class GameManager : MonoBehaviour
             Player player = playerList.Find(p => p.playerId == scoreEntry.Key);
             if (player != null)
             {
-                player.cumulativeScore = scoreEntry.Value;
+                player.SetCumulativeScore(scoreEntry.Value);
                 player.playerUI?.UpdateCumulativeScore(scoreEntry.Value);
             }
         }
@@ -1717,7 +1717,7 @@ public class GameManager : MonoBehaviour
             Player player = playerList.Find(p => p.playerId == scoreEntry.Key);
             if (player != null)
             {
-                player.cumulativeScore = scoreEntry.Value;
+                player.SetCumulativeScore(scoreEntry.Value);
                 player.playerUI?.UpdateCumulativeScore(scoreEntry.Value);
             }
         }
@@ -1742,8 +1742,8 @@ public class GameManager : MonoBehaviour
         Player player = playerList.Find(p => p.playerId == data.playerId);
         if (player != null)
         {
-            player.cumulativeScore = data.cumulativeScore;
-            player.isEliminated = data.isEliminated;
+            player.SetCumulativeScore(data.cumulativeScore);
+            player.SetEliminatedState(data.isEliminated);
             
             player.playerUI?.UpdateCumulativeScore(data.cumulativeScore);
             if (data.isEliminated)
@@ -1763,7 +1763,7 @@ public class GameManager : MonoBehaviour
             Player player = playerList.Find(p => p.playerId == droppedPlayerId);
             if (player != null && !player.hasDropped)
             {
-                player.hasDropped = true;
+                player.SetDroppedState(true);
                 player.playerUI?.SetDroppedState(true);
             }
         }
@@ -1773,7 +1773,7 @@ public class GameManager : MonoBehaviour
             Player player = playerList.Find(p => p.playerId == eliminatedPlayerId);
             if (player != null && !player.isEliminated)
             {
-                player.isEliminated = true;
+                player.SetEliminatedState(true);
                 player.playerUI?.SetEliminatedState(true);
             }
         }

@@ -86,7 +86,7 @@ public class RummyTestManager : MonoBehaviour
     {
         // Test 1: Drop without picking a card (should get FULL_DROP_PENALTY)
         UpdateTestStatus($"Test 1: Drop without picking card (Penalty: {Constants.FULL_DROP_PENALTY})");
-        player.hasPickedCardThisTurn = false;
+        player.SetHasPickedCardThisTurn(false);
         int scoreBefore = player.cumulativeScore;
         player.DropFromGame(false);
         

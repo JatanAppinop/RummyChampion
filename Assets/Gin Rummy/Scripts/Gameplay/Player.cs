@@ -58,7 +58,7 @@ public class Player
 
     private Card _cardOnAction;
     private bool lastCardIsTakenFromDeck;
-    protected PlayerUI playerUI;
+    public PlayerUI playerUI; // 🔹 CHANGED: Made public to allow external access
     private bool inAction;
     private Card zoomedCard;
     public Card GetZoomedCard => zoomedCard;
@@ -398,6 +398,33 @@ public class Player
         
         // Calculate deadwood score from hand
         return myHand != null ? myHand.GetDeadwoodScore() : 0;
+    }
+    
+    // 🔹 PUBLIC METHODS FOR SETTING PROPERTIES WITH PRIVATE SETTERS
+    
+    public void SetDroppedState(bool dropped)
+    {
+        hasDropped = dropped;
+    }
+    
+    public void SetEliminatedState(bool eliminated)
+    {
+        isEliminated = eliminated;
+    }
+    
+    public void SetCumulativeScore(int score)
+    {
+        cumulativeScore = score;
+    }
+    
+    public void SetDealsWon(int deals)
+    {
+        dealsWon = deals;
+    }
+    
+    public void SetHasPickedCardThisTurn(bool picked)
+    {
+        hasPickedCardThisTurn = picked;
     }
     
     // 🔹 NEW SERVER COMMUNICATION METHODS
