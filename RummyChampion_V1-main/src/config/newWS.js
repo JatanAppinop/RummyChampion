@@ -143,10 +143,31 @@ module.exports = {
           // =============== EVENT: player_ready (ENHANCED) =================
           socket.on("player_ready", async (playerReadyData) => {
             try {
-              console.log(`🎮 [Backend] Enhanced player_ready received from ${playerId}:`, playerReadyData);
+              console.log(`🔍 [BACKEND DEBUG] ===== PLAYER_READY EVENT RECEIVED =====`);
+              console.log(`🔍 [BACKEND DEBUG] Event: player_ready received from socket: ${socket.id}`);
+              console.log(`🔍 [BACKEND DEBUG] Player ID from handshake: ${playerId}`);
+              console.log(`🔍 [BACKEND DEBUG] Match ID from handshake: ${matchId}`);
+              console.log(`🔍 [BACKEND DEBUG] Data received:`, playerReadyData);
+              console.log(`🔍 [BACKEND DEBUG] Data type:`, typeof playerReadyData);
+              console.log(`🔍 [BACKEND DEBUG] Data is null:`, playerReadyData === null);
+              console.log(`🔍 [BACKEND DEBUG] Data is undefined:`, playerReadyData === undefined);
+              
+              if (playerReadyData) {
+                console.log(`🔍 [BACKEND DEBUG] Data keys:`, Object.keys(playerReadyData));
+                console.log(`🔍 [BACKEND DEBUG] Data values:`, Object.values(playerReadyData));
+                console.log(`🔍 [BACKEND DEBUG] Received playerId in data: ${playerReadyData.playerId}`);
+                console.log(`🔍 [BACKEND DEBUG] Received playerName in data: ${playerReadyData.playerName}`);
+                console.log(`🔍 [BACKEND DEBUG] Received matchId in data: ${playerReadyData.matchId}`);
+                console.log(`🔍 [BACKEND DEBUG] Received gameMode in data: ${playerReadyData.gameMode}`);
+                console.log(`🔍 [BACKEND DEBUG] Received gameType in data: ${playerReadyData.gameType}`);
+              }
+              
+              console.log(`🔍 [BACKEND DEBUG] Player count: ${playerCount}`);
+              console.log(`🔍 [BACKEND DEBUG] Game type: ${gameType}`);
               
               if (!playerCount) {
-                console.error("❌ Player count is not defined");
+                console.error("❌ [BACKEND DEBUG] Player count is not defined");
+                console.log(`🔍 [BACKEND DEBUG] Sending error response to client`);
                 socket.emit("player_ready", { 
                   status: "error", 
                   reason: "Player count not defined",
@@ -188,16 +209,26 @@ module.exports = {
               rummyPlayerReadiness[matchId].add(playerId);
               rummyConnectedPlayers[matchId].push(playerId);
 
-              console.log(`🎯 [Backend] Players ready: ${rummyPlayerReadiness[matchId].size}/${playerCount}`);
+              console.log(`🔍 [BACKEND DEBUG] Players ready: ${rummyPlayerReadiness[matchId].size}/${playerCount}`);
+              console.log(`🔍 [BACKEND DEBUG] Ready players list:`, Array.from(rummyPlayerReadiness[matchId]));
+              console.log(`🔍 [BACKEND DEBUG] Connected players list:`, rummyConnectedPlayers[matchId]);
 
               // Send acknowledgment back to client
-              socket.emit("player_ready", {
+              const responseData = {
                 status: "ready",
                 playerId: playerId,
                 readyPlayers: rummyPlayerReadiness[matchId].size,
                 totalPlayers: playerCount,
                 nextEvent: rummyPlayerReadiness[matchId].size === playerCount ? "start_game" : "wait_for_players"
-              });
+              };
+              
+              console.log(`🔍 [BACKEND DEBUG] ===== SENDING RESPONSE TO CLIENT =====`);
+              console.log(`🔍 [BACKEND DEBUG] Response data:`, responseData);
+              console.log(`🔍 [BACKEND DEBUG] Sending to socket ID: ${socket.id}`);
+              
+              socket.emit("player_ready", responseData);
+              
+              console.log(`✅ [BACKEND DEBUG] Response sent successfully`);
 
               if (rummyPlayerReadiness[matchId].size === playerCount) {
                 console.log("🚀 [Backend] All players are ready. Starting the Rummy match.");

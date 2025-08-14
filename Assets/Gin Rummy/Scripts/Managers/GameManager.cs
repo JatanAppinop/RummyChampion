@@ -1769,15 +1769,19 @@ public class GameManager : MonoBehaviour
     {
         try
         {
-            Debug.Log("[GameManager] Sending player_ready event with player data...");
+            Debug.Log("🔍 [FRONTEND DEBUG] ===== STARTING PLAYER_READY EVENT FLOW =====");
+            Debug.Log($"🔍 [FRONTEND DEBUG] Method: SendPlayerReadyEventWithData called");
             
             // Get current player information
             Player currentPlayerData = thisPlayerHand?.playerOfThisHand;
             if (currentPlayerData == null)
             {
-                Debug.LogError("[GameManager] No current player found for player_ready event!");
+                Debug.LogError("❌ [FRONTEND DEBUG] No current player found for player_ready event!");
                 return;
             }
+            
+            Debug.Log($"🔍 [FRONTEND DEBUG] Current player found: {currentPlayerData.name}");
+            Debug.Log($"🔍 [FRONTEND DEBUG] Current player ID: {currentPlayerData.playerId}");
             
             // Create comprehensive player ready data
             PlayerReadyData playerReadyData = new PlayerReadyData
@@ -1799,21 +1803,37 @@ public class GameManager : MonoBehaviour
                 deviceInfo = $"{SystemInfo.deviceModel}_{SystemInfo.operatingSystem}"
             };
             
-            Debug.Log($"[GameManager] Player Ready Data: Player={playerReadyData.playerName}, " +
-                     $"Match={playerReadyData.matchId}, Mode={playerReadyData.gameMode}, " +
-                     $"Type={playerReadyData.gameType}, Players={playerReadyData.currentPlayers}");
+            Debug.Log("🔍 [FRONTEND DEBUG] ===== PLAYER READY DATA CREATED =====");
+            Debug.Log($"🔍 [FRONTEND DEBUG] playerId: {playerReadyData.playerId}");
+            Debug.Log($"🔍 [FRONTEND DEBUG] playerName: {playerReadyData.playerName}");
+            Debug.Log($"🔍 [FRONTEND DEBUG] matchId: {playerReadyData.matchId}");
+            Debug.Log($"🔍 [FRONTEND DEBUG] gameMode: {playerReadyData.gameMode}");
+            Debug.Log($"🔍 [FRONTEND DEBUG] gameType: {playerReadyData.gameType}");
+            Debug.Log($"🔍 [FRONTEND DEBUG] isReady: {playerReadyData.isReady}");
+            Debug.Log($"🔍 [FRONTEND DEBUG] playerStatus: {playerReadyData.playerStatus}");
+            Debug.Log($"🔍 [FRONTEND DEBUG] currentPlayers: {playerReadyData.currentPlayers}");
+            Debug.Log($"🔍 [FRONTEND DEBUG] maxPlayers: {playerReadyData.maxPlayers}");
+            Debug.Log($"🔍 [FRONTEND DEBUG] walletBalance: {playerReadyData.walletBalance}");
+            
+            Debug.Log("🔍 [FRONTEND DEBUG] ===== SENDING TO SOCKET SERVER =====");
+            Debug.Log($"🔍 [FRONTEND DEBUG] About to call RummySocketServer.Instance.SendEnhancedEvent");
+            Debug.Log($"🔍 [FRONTEND DEBUG] Event: RummySocketEvents.player_ready");
+            Debug.Log($"🔍 [FRONTEND DEBUG] Socket connected: {RummySocketServer.Instance != null}");
             
             // Send enhanced player_ready event with comprehensive data
             await RummySocketServer.Instance.SendEnhancedEvent(RummySocketEvents.player_ready, playerReadyData);
             
-            Debug.Log("[GameManager] ✅ player_ready event sent successfully with player data!");
+            Debug.Log("✅ [FRONTEND DEBUG] SendEnhancedEvent call completed successfully!");
+            Debug.Log("🔍 [FRONTEND DEBUG] ===== WAITING FOR BACKEND RESPONSE =====");
         }
         catch (Exception e)
         {
-            Debug.LogError($"[GameManager] ❌ Failed to send player_ready event: {e.Message}");
-            Debug.LogError($"[GameManager] Stack trace: {e.StackTrace}");
+            Debug.LogError($"❌ [FRONTEND DEBUG] Failed to send player_ready event: {e.Message}");
+            Debug.LogError($"❌ [FRONTEND DEBUG] Stack trace: {e.StackTrace}");
+            Debug.LogError($"❌ [FRONTEND DEBUG] Inner exception: {e.InnerException?.Message}");
             
             // Try fallback with basic data
+            Debug.Log("🔍 [FRONTEND DEBUG] ===== ATTEMPTING FALLBACK =====");
             await SendBasicPlayerReadyFallback();
         }
     }
