@@ -11,8 +11,9 @@ namespace Appinop
         public static readonly string HelpURL = "mailto:help@rummychampions.co.in";
         //public static readonly string ServerURL = "https://4268-2401-4900-889b-b11-e55e-f3cb-e105-9263.ngrok-free.app";
         //public static readonly string SocketURL = "https://4268-2401-4900-889b-b11-e55e-f3cb-e105-9263.ngrok-free.app";
-        public static readonly string ServerURL = "https://api.rummychampions.co.in";
-        public static readonly string SocketURL = "http://103.175.163.162:9091";
+        public static readonly string ServerURL = "http://192.168.29.86:9091/";
+        //public static readonly string SocketURL = "http://103.175.163.162:9091"; old url 
+        public static readonly string SocketURL = "http://192.168.29.86:9091/";  // check new url    
         public static readonly string PrivacyPolicyURL = "https://rummychampions.co.in/privacy-policy.php";
         public static readonly string TermsConditionURL = "https://rummychampions.co.in/terms-and-condition.php";
         public static readonly string SiteURL = "https://rummychampions.co.in/";
