@@ -224,27 +224,71 @@ public class RummySocketServer : SingletonWithGameobject<RummySocketServer>
             OnGameEnded?.Invoke();
         });
 
-        // 🔹 MISSING: Player Ready Response Handler
+        // 🔹 ENHANCED: Player Ready Response Handler (fixes backend communication issue)
         socket.OnUnityThread(Enum.GetName(typeof(RummySocketEvents), RummySocketEvents.player_ready), response =>
         {
             try
             {
-                Debug.Log($"[Socket] Received: player_ready response - <color=green>{response}</color>");
-                // Parse the response to get next game event
-                var responseParsed = response.GetValue<Dictionary<string, object>>();
+                Debug.Log($"[Socket] ✅ Received player_ready response from backend - <color=green>{response}</color>");
                 
-                if (responseParsed.ContainsKey("nextEvent"))
+                // Try multiple response formats to handle different backend responses
+                if (response == null)
                 {
-                    string nextEvent = responseParsed["nextEvent"].ToString();
-                    Debug.Log($"[Socket] Next event after player_ready: {nextEvent}");
+                    Debug.LogWarning("[Socket] player_ready response is null - this might be the issue!");
+                    return;
+                }
+                
+                // Handle different response types
+                if (response.GetValue<string>() != null)
+                {
+                    // Simple string response
+                    string stringResponse = response.GetValue<string>();
+                    Debug.Log($"[Socket] player_ready string response: {stringResponse}");
+                    HandlePlayerReadyStringResponse(stringResponse);
+                    return;
+                }
+                
+                // Try dictionary response
+                var responseParsed = response.GetValue<Dictionary<string, object>>();
+                if (responseParsed != null)
+                {
+                    Debug.Log($"[Socket] player_ready dictionary response with {responseParsed.Count} keys");
                     
-                    // Handle the next event based on what backend says
-                    HandlePlayerReadyResponse(nextEvent, responseParsed);
+                    // Log all keys in the response for debugging
+                    foreach (var kvp in responseParsed)
+                    {
+                        Debug.Log($"[Socket] Response key: {kvp.Key} = {kvp.Value}");
+                    }
+                    
+                    // Check for next event
+                    if (responseParsed.ContainsKey("nextEvent"))
+                    {
+                        string nextEvent = responseParsed["nextEvent"].ToString();
+                        Debug.Log($"[Socket] ✅ Next event after player_ready: {nextEvent}");
+                        HandlePlayerReadyResponse(nextEvent, responseParsed);
+                    }
+                    else if (responseParsed.ContainsKey("status"))
+                    {
+                        string status = responseParsed["status"].ToString();
+                        Debug.Log($"[Socket] player_ready status: {status}");
+                        HandlePlayerReadyStatusResponse(status, responseParsed);
+                    }
+                    else
+                    {
+                        Debug.Log("[Socket] ✅ player_ready response received but no specific next action found");
+                        // Backend acknowledged the player_ready, this should prevent player removal
+                    }
+                }
+                else
+                {
+                    Debug.Log("[Socket] ✅ player_ready response received (simple acknowledgment)");
+                    // Even a simple response means backend got the event
                 }
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to handle player_ready response: {e.Message}");
+                Debug.LogError($"[Socket] ❌ Failed to handle player_ready response: {e.Message}");
+                Debug.LogError($"[Socket] Exception details: {e.StackTrace}");
             }
         });
 
@@ -507,28 +551,33 @@ public class RummySocketServer : SingletonWithGameobject<RummySocketServer>
         }
     }
 
-    // 🔹 MISSING: Handle Player Ready Response Method
+    // 🔹 ENHANCED: Handle Player Ready Response Method
     private void HandlePlayerReadyResponse(string nextEvent, Dictionary<string, object> responseData)
     {
         try
         {
-            Debug.Log($"[Socket] Handling player_ready response with next event: {nextEvent}");
+            Debug.Log($"[Socket] ✅ Handling player_ready response with next event: {nextEvent}");
             
             switch (nextEvent.ToLower())
             {
                 case "start_game":
                 case "game_start":
-                    Debug.Log("[Socket] Game start event triggered from player_ready");
-                    // Trigger game start logic
+                case "begin_game":
+                    Debug.Log("[Socket] 🎮 Game start event triggered from player_ready");
                     OnGameStart?.Invoke();
                     break;
                     
                 case "start_turn":
+                case "begin_turn":
                     if (responseData.ContainsKey("playerId"))
                     {
                         string playerId = responseData["playerId"].ToString();
-                        Debug.Log($"[Socket] Start turn for player: {playerId}");
+                        Debug.Log($"[Socket] 🎯 Start turn for player: {playerId}");
                         OnStartTurn?.Invoke(playerId);
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[Socket] start_turn response missing playerId");
                     }
                     break;
                     
@@ -536,30 +585,130 @@ public class RummySocketServer : SingletonWithGameobject<RummySocketServer>
                     if (responseData.ContainsKey("playerId"))
                     {
                         string playerId = responseData["playerId"].ToString();
-                        Debug.Log($"[Socket] Next turn for player: {playerId}");
+                        Debug.Log($"[Socket] ➡️ Next turn for player: {playerId}");
                         OnNextTurn?.Invoke(playerId);
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[Socket] next_turn response missing playerId");
                     }
                     break;
                     
                 case "deal_cards":
                 case "card_distribution":
-                    Debug.Log("[Socket] Card distribution event triggered");
-                    // Handle card distribution if needed
+                case "distribute_cards":
+                    Debug.Log("[Socket] 🃏 Card distribution event triggered");
+                    // Trigger card distribution
+                    OnGameStart?.Invoke();
                     break;
                     
                 case "wait_for_players":
-                    Debug.Log("[Socket] Waiting for more players");
-                    // Handle waiting state
+                case "waiting":
+                    Debug.Log("[Socket] ⏳ Waiting for more players");
+                    // Continue waiting - no immediate action needed
+                    break;
+                    
+                case "match_ready":
+                case "all_players_ready":
+                    Debug.Log("[Socket] ✅ All players ready - starting match");
+                    OnGameStart?.Invoke();
                     break;
                     
                 default:
-                    Debug.LogWarning($"[Socket] Unknown next event after player_ready: {nextEvent}");
+                    Debug.LogWarning($"[Socket] ⚠️ Unknown next event after player_ready: {nextEvent}");
+                    // Still acknowledge that response was received
                     break;
             }
         }
         catch (Exception e)
         {
-            Debug.LogError($"[Socket] Error handling player_ready response: {e.Message}");
+            Debug.LogError($"[Socket] ❌ Error handling player_ready response: {e.Message}");
+        }
+    }
+    
+    // 🔹 NEW: Handle string response for player_ready
+    private void HandlePlayerReadyStringResponse(string response)
+    {
+        try
+        {
+            Debug.Log($"[Socket] ✅ Handling player_ready string response: {response}");
+            
+            switch (response.ToLower())
+            {
+                case "acknowledged":
+                case "received":
+                case "ok":
+                case "success":
+                    Debug.Log("[Socket] ✅ Player ready acknowledged by backend");
+                    break;
+                    
+                case "start_game":
+                case "begin":
+                    Debug.Log("[Socket] 🎮 Starting game from string response");
+                    OnGameStart?.Invoke();
+                    break;
+                    
+                case "wait":
+                case "waiting":
+                    Debug.Log("[Socket] ⏳ Backend says to wait for more players");
+                    break;
+                    
+                default:
+                    Debug.Log($"[Socket] 📝 Unknown string response: {response}");
+                    break;
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[Socket] ❌ Error handling string response: {e.Message}");
+        }
+    }
+    
+    // 🔹 NEW: Handle status response for player_ready
+    private void HandlePlayerReadyStatusResponse(string status, Dictionary<string, object> responseData)
+    {
+        try
+        {
+            Debug.Log($"[Socket] ✅ Handling player_ready status response: {status}");
+            
+            switch (status.ToLower())
+            {
+                case "ready":
+                case "accepted":
+                case "confirmed":
+                    Debug.Log("[Socket] ✅ Player ready status confirmed");
+                    
+                    // Check if there are additional instructions
+                    if (responseData.ContainsKey("action"))
+                    {
+                        string action = responseData["action"].ToString();
+                        Debug.Log($"[Socket] Action to take: {action}");
+                        HandlePlayerReadyResponse(action, responseData);
+                    }
+                    break;
+                    
+                case "waiting":
+                case "pending":
+                    Debug.Log("[Socket] ⏳ Player ready but waiting for others");
+                    break;
+                    
+                case "rejected":
+                case "error":
+                    Debug.LogWarning("[Socket] ❌ Player ready was rejected!");
+                    if (responseData.ContainsKey("reason"))
+                    {
+                        Debug.LogWarning($"[Socket] Rejection reason: {responseData["reason"]}");
+                    }
+                    break;
+                    
+                default:
+                    Debug.Log($"[Socket] 📝 Unknown status: {status}");
+                    break;
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[Socket] ❌ Error handling status response: {e.Message}");
         }
     }
 

@@ -3,6 +3,25 @@ using System.Collections.Generic;
 // 🔹 ENHANCED RUMMY GAME DATA MODELS
 
 [System.Serializable]
+public class PlayerReadyData
+{
+    public string playerId;
+    public string playerName;
+    public string matchId;
+    public string gameMode; // "Pool", "Deals", "Points"
+    public string gameType; // "Pool101", "Pool201", "2Deal", etc.
+    public bool isReady;
+    public DateTime readyTime;
+    public string playerStatus; // "waiting", "ready", "in_game"
+    public int currentPlayers;
+    public int maxPlayers;
+    public string tableId;
+    public double walletBalance;
+    public string clientVersion;
+    public string deviceInfo;
+}
+
+[System.Serializable]
 public class PlayerDroppedData
 {
     public string playerId;

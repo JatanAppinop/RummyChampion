@@ -101,8 +101,9 @@ namespace Rummy
 
                 if (timeout == (30 - 2))
                 {
-                    RummySocketServer.Instance.SendEvent(RummySocketEvents.player_ready);
-                    Debug.LogError($"Player Ready");
+                    // 🔹 FIXED: Send player_ready with proper data
+                    SendPlayerReadyWithData();
+                    Debug.Log($"[GameDirector] Player Ready event sent with data");
                 }
 
                 loadingLabel.SetText("Connecting Players\nPlease Wait : " + timeout);
@@ -133,6 +134,68 @@ namespace Rummy
             }
 
             SceneManager.LoadScene((int)Scenes.MainMenu);
+
+        }
+
+        // 🔹 NEW: Send player_ready event with proper data (fixes backend communication)
+        private async void SendPlayerReadyWithData()
+        {
+            try
+            {
+                Debug.Log("[GameDirector] Sending player_ready event with player data...");
+                
+                // Create basic player ready data for GameDirector context
+                PlayerReadyData playerReadyData = new PlayerReadyData
+                {
+                    playerId = UserDataContext.Instance.UserData._id,
+                    playerName = UserDataContext.Instance.UserData.username,
+                    matchId = SecurePlayerPrefs.GetString(Appinop.Constants.KMatchId),
+                    gameMode = GameManager.instance?.gameMode.ToString() ?? "Unknown",
+                    gameType = GameManager.instance?.tableData?.gameType ?? "Unknown",
+                    isReady = true,
+                    readyTime = DateTime.UtcNow,
+                    playerStatus = "waiting",
+                    currentPlayers = 1, // At least this player
+                    maxPlayers = 2, // Default assumption
+                    tableId = GameManager.instance?.tableData?._id,
+                    walletBalance = UserDataContext.Instance.UserData.walletCoins,
+                    clientVersion = Application.version,
+                    deviceInfo = $"{SystemInfo.deviceModel}_{SystemInfo.operatingSystem}"
+                };
+                
+                Debug.Log($"[GameDirector] Sending player_ready: Player={playerReadyData.playerName}, Match={playerReadyData.matchId}");
+                
+                // Send enhanced player_ready event
+                await RummySocketServer.Instance.SendEnhancedEvent(RummySocketEvents.player_ready, playerReadyData);
+                
+                Debug.Log("[GameDirector] ✅ player_ready event sent successfully!");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[GameDirector] ❌ Failed to send player_ready event: {e.Message}");
+                
+                // Fallback to basic event
+                try
+                {
+                    var basicData = new Dictionary<string, string>
+                    {
+                        { "playerId", UserDataContext.Instance.UserData._id },
+                        { "matchId", SecurePlayerPrefs.GetString(Appinop.Constants.KMatchId) },
+                        { "status", "ready" }
+                    };
+                    
+                    await RummySocketServer.Instance.SendEvent(RummySocketEvents.player_ready, basicData);
+                    Debug.Log("[GameDirector] ✅ Fallback player_ready sent!");
+                }
+                catch (Exception fallbackError)
+                {
+                    Debug.LogError($"[GameDirector] ❌ Even fallback failed: {fallbackError.Message}");
+                }
+            }
+        }
+
+        private void OnDestroy()
+        {
 
         }
     }

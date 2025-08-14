@@ -301,13 +301,8 @@ public class GameManager : MonoBehaviour
         // Clear the finish pile except for the first card
         ClearFinishPileExceptFirst();
 
-        // Send a "player_ready" event to the server asynchronously with error handling
-        await RummySocketServer.Instance.SendEvent(RummySocketEvents.player_ready)
-            .ContinueWith(task =>
-            {
-                if (task.IsFaulted)  // Check if the event sending failed
-                    Debug.LogError($"Failed to send player_ready event: {task.Exception}");
-            });
+        // 🔹 FIXED: Send player_ready event with proper player data (backend expects this data)
+        await SendPlayerReadyEventWithData();
     }
 
     public void ClearFinishPileExceptFirst()
@@ -807,14 +802,8 @@ public class GameManager : MonoBehaviour
         await Task.Delay(1000);
         TakeOrPassGamePhase();
 
-        // Send a "player_ready" event to the server asynchronously with error handling
-        var task = RummySocketServer.Instance.SendEvent(RummySocketEvents.player_ready)
-            .ContinueWith(t => Debug.Log("player_ready event sent successfully"))
-            .ContinueWith(t =>
-            {
-                if (t.Exception != null)
-                    Debug.LogError($"Failed to send player_ready event: {t.Exception}");
-            });
+        // 🔹 FIXED: Send player_ready event with proper player data
+        await SendPlayerReadyEventWithData();
     }
     
     // 🔹 NEW: Live Game Mode Initialization (moved from test code)
@@ -1773,6 +1762,84 @@ public class GameManager : MonoBehaviour
             dealsWon[player.playerId] = player.dealsWon;
         }
         return dealsWon;
+    }
+    
+    // 🔹 NEW: Send player_ready event with proper data (fixes backend communication issue)
+    private async Task SendPlayerReadyEventWithData()
+    {
+        try
+        {
+            Debug.Log("[GameManager] Sending player_ready event with player data...");
+            
+            // Get current player information
+            Player currentPlayerData = thisPlayerHand?.playerOfThisHand;
+            if (currentPlayerData == null)
+            {
+                Debug.LogError("[GameManager] No current player found for player_ready event!");
+                return;
+            }
+            
+            // Create comprehensive player ready data
+            PlayerReadyData playerReadyData = new PlayerReadyData
+            {
+                playerId = currentPlayerData.playerId ?? UserDataContext.Instance.UserData._id,
+                playerName = currentPlayerData.userData?.username ?? UserDataContext.Instance.UserData.username,
+                matchId = SecurePlayerPrefs.GetString(Appinop.Constants.KMatchId),
+                gameMode = gameMode.ToString(),
+                gameType = tableData?.gameType ?? "Unknown",
+                isReady = true,
+                readyTime = DateTime.UtcNow,
+                playerStatus = "ready",
+                currentPlayers = playerList?.Count ?? 0,
+                maxPlayers = tableData?.gameType?.Contains("2") == true ? 2 : 
+                           tableData?.gameType?.Contains("4") == true ? 4 : 6,
+                tableId = tableData?._id,
+                walletBalance = UserDataContext.Instance.UserData.walletCoins,
+                clientVersion = Application.version,
+                deviceInfo = $"{SystemInfo.deviceModel}_{SystemInfo.operatingSystem}"
+            };
+            
+            Debug.Log($"[GameManager] Player Ready Data: Player={playerReadyData.playerName}, " +
+                     $"Match={playerReadyData.matchId}, Mode={playerReadyData.gameMode}, " +
+                     $"Type={playerReadyData.gameType}, Players={playerReadyData.currentPlayers}");
+            
+            // Send enhanced player_ready event with comprehensive data
+            await RummySocketServer.Instance.SendEnhancedEvent(RummySocketEvents.player_ready, playerReadyData);
+            
+            Debug.Log("[GameManager] ✅ player_ready event sent successfully with player data!");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[GameManager] ❌ Failed to send player_ready event: {e.Message}");
+            Debug.LogError($"[GameManager] Stack trace: {e.StackTrace}");
+            
+            // Try fallback with basic data
+            await SendBasicPlayerReadyFallback();
+        }
+    }
+    
+    // 🔹 NEW: Fallback method for player_ready if enhanced method fails
+    private async Task SendBasicPlayerReadyFallback()
+    {
+        try
+        {
+            Debug.Log("[GameManager] Attempting fallback player_ready with basic data...");
+            
+            var basicData = new Dictionary<string, string>
+            {
+                { "playerId", UserDataContext.Instance.UserData._id },
+                { "matchId", SecurePlayerPrefs.GetString(Appinop.Constants.KMatchId) },
+                { "status", "ready" },
+                { "gameMode", gameMode.ToString() }
+            };
+            
+            await RummySocketServer.Instance.SendEvent(RummySocketEvents.player_ready, basicData);
+            Debug.Log("[GameManager] ✅ Fallback player_ready event sent!");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[GameManager] ❌ Even fallback player_ready failed: {e.Message}");
+        }
     }
     #endregion
     
