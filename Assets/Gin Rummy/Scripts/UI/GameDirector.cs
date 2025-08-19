@@ -60,10 +60,10 @@ namespace Rummy
             try
             {
                 Debug.Log($"🔍 [GAME DIRECTOR] Starting connection to server...");
-                Debug.Log($"🔍 [GAME DIRECTOR] Socket URL: {APIServices.Instance.GetSocketUrl}/rummyserver");
+                Debug.Log($"🔍 [GAME DIRECTOR] Socket URL: {APIServices.Instance.GetSocketUrl}rummyserver");
                 Debug.Log($"🔍 [GAME DIRECTOR] Match ID: {GameManager.instance.MatchID}");
                 
-                RummySocketServer.Instance.Initialize(APIServices.Instance.GetSocketUrl + "/rummyserver");
+                RummySocketServer.Instance.Initialize(APIServices.Instance.GetSocketUrl + "rummyserver");
 
                 // 🔧 FIX: Add error event listener before connecting
                 RummySocketServer.Instance.OnError.AddListener(HandleConnectionError);
